@@ -17,7 +17,7 @@ commands. In _Shed_ this work has been done in advance for you.
 
 ## Installation
 
-Simply put the scripts in your `PATH`, o run `make install` in the scripts
+Simply put the scripts in your `PATH`, or run `make install` in the scripts
 source directory (just in case, read before the `Makefile`).
 
 ## Documentation and tests
