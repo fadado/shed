@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# shed-image -- A wrapper for docker image management
+# shed-image -- A wrapper for Docker image management
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9'
+declare -r VERSION='0.9'	# Shed version
 declare -r SELF=${0##*/}
 
 #?if [[ -e ./Shedfile ]]; then
@@ -122,7 +122,7 @@ Commands:
         Show the history of an image
     images [OPTIONS] [REPOSITORY]
         List images
-    import URL|- [REPOSITORY[:TAG]]
+    import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]
         Create an empty filesystem image from the contents of a tarbal
     list [OPTIONS] [REPOSITORY]
         List images
@@ -201,7 +201,7 @@ function image_images {
 		| column --table --separator $'\t'
 }
 
-# import URL | - [REPOSITORY[:TAG]]
+# import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]
 function image_import {
 	help_command import "$@"
 	(( $# > 0 )) || help_command import -h
@@ -311,4 +311,4 @@ main "$@"
 
 exit $?
 
-# vim:syntax=sh:ai:sw=4:ts=4
+# vim:syntax=sh:ai:sw=4:ts=4:et

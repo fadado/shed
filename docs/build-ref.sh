@@ -6,14 +6,14 @@ clean() {
 
 build_hub() {
 	echo -e '# shed-hub\n'
-	shed-hub -h | clean
+	../shed-hub -h | clean
 	echo
 
 	echo -e '# Commands\n'
 	for cmd in build events info inspect login logout pull push query search version
 	do
 		echo -e "## $cmd\n"
-		shed-hub $cmd -h | clean
+		../shed-hub $cmd -h | clean
 		echo
 	done
     
@@ -21,14 +21,14 @@ build_hub() {
 
 build_image() {
 	echo -e '# shed-image\n'
-	shed-image -h | clean
+	../shed-image -h | clean
 	echo
 
 	echo -e '# Commands\n'
 	for cmd in build commit history images import list load purge rm save tag
 	do
 		echo -e "## $cmd\n"
-		shed-image $cmd -h | clean
+		../shed-image $cmd -h | clean
 		echo
 	done
     
@@ -36,14 +36,14 @@ build_image() {
 
 build_container() {
 	echo -e '# shed-container\n'
-	shed-container -h | clean
+	../shed-container -h | clean
 	echo
 
 	echo -e '# General commands\n'
 	for cmd in build cp create diff export links list port ps rename rm status
 	do
 		echo -e "## $cmd\n"
-		shed-container $cmd -h | clean
+		../shed-container $cmd -h | clean
 		echo
 	done
     
@@ -51,7 +51,7 @@ build_container() {
 	for cmd in attach enter exec kill logs pause restart run ship start stats stop top unpause wait
 	do
 		echo -e "## $cmd\n"
-		shed-container $cmd -h | clean
+		../shed-container $cmd -h | clean
 		echo
 	done
     

@@ -3,7 +3,7 @@ This example implements the ECHO protocol server using two linked containers:
 
 How to test:
 
-1. Run and attach to **receiver** container:
+1. Create containers and attach to **receiver** container:
 
         shed-hub build
         shed-container --propagate start receiver

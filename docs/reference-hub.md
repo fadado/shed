@@ -11,23 +11,23 @@
             Build a project from the Shedfile source
         events [OPTIONS]
             Get real time events from the server
-        info
+        info [OPTIONS]
             Display system-wide information
         inspect [OPTIONS] CONTAINER | IMAGE [CONTAINER | IMAGE...]
             WARNING: recommended 'query' instead
         login [OPTIONS] [SERVER]
             Register or log in to a Docker registry server
-        logout [SERVER]
+        logout [OPTIONS] [SERVER]
             Log out from a Docker registry server
-        pull [OPTIONS] NAME[:TAG]
+        pull [OPTIONS] NAME[:TAG | @DIGEST]
             Pull an image or a repository from a Docker registry server
-        push NAME[:TAG]
+        push [OPTIONS] NAME[:TAG]
             Push an image or a repository to a Docker registry server
         query [OPTIONS] CONTAINER | IMAGE [QUERY]
             Return YAML formated information on a container or image
         search [OPTIONS] TERM
             Search for an image on the Docker Hub
-        version
+        version [OPTIONS]
             Show the Docker version information
     
     Run 'shed-hub COMMAND --help' for more information on a command.

@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# shed-hub -- A wrapper for some docker commands
+# shed-hub -- A wrapper for Docker global commands
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9'	# shed-hub version
+declare -r VERSION='0.9'	# Shed version
 declare -r SELF=${0##*/}
 
 if [[ -e ./Shedfile ]]; then
@@ -115,23 +115,23 @@ Commands:
         Build a project from the Shedfile source
     events [OPTIONS]
         Get real time events from the server
-    info
+    info [OPTIONS]
         Display system-wide information
     inspect [OPTIONS] CONTAINER | IMAGE [CONTAINER | IMAGE...]
         WARNING: recommended 'query' instead
     login [OPTIONS] [SERVER]
         Register or log in to a Docker registry server
-    logout [SERVER]
+    logout [OPTIONS] [SERVER]
         Log out from a Docker registry server
-    pull [OPTIONS] NAME[:TAG]
+    pull [OPTIONS] NAME[:TAG | @DIGEST]
         Pull an image or a repository from a Docker registry server
-    push NAME[:TAG]
+    push [OPTIONS] NAME[:TAG]
         Push an image or a repository to a Docker registry server
     query [OPTIONS] CONTAINER | IMAGE [QUERY]
         Return YAML formated information on a container or image
     search [OPTIONS] TERM
         Search for an image on the Docker Hub
-    version
+    version [OPTIONS]
         Show the Docker version information
 
 Run '$SELF COMMAND --help' for more information on a command.
@@ -239,7 +239,7 @@ function hub_events {
 	docker events "$@"
 }
 
-# info
+# info [OPTIONS]
 function hub_info {
 	help_command info "$@"
 	(( $# == 0 )) || help_command info -h
@@ -308,7 +308,7 @@ function hub_login {
 	docker login "$@"
 }
 
-# logout [SERVER]
+# logout [OPTIONS] [SERVER]
 function hub_logout {
 	help_command logout "$@"
 	(( $# < 2 )) || help_command logout -h
@@ -316,7 +316,7 @@ function hub_logout {
 	docker logout "$1"
 }
 
-# pull [OPTIONS] NAME[:TAG]
+# pull [OPTIONS] NAME[:TAG | @DIGEST]
 function hub_pull {
 	help_command pull "$@"
 	(( $# > 0 )) || help_command pull -h
@@ -324,7 +324,7 @@ function hub_pull {
 	docker pull "$@"
 }
 
-# push NAME[:TAG]
+# push [OPTIONS] NAME[:TAG]
 function hub_push {
 	help_command push "$@"
 	(( $# == 1 )) || help_command push -h
@@ -340,7 +340,7 @@ function hub_search {
 	docker search "$@" 2>&1 | pager
 }
 
-# version
+# version [OPTIONS]
 function hub_version {
 	help_command version "$@"
 	(( $# == 0 )) || help_command version -h
@@ -356,4 +356,4 @@ main "$@"
 
 exit $?
 
-# vim:syntax=sh:ai:sw=4:ts=4
+# vim:syntax=sh:ai:sw=4:ts=4:et

@@ -12,24 +12,25 @@
     
     General commands:
         build [OPTIONS] FILE
-            Build an container from a Shedfile
-        cp CONTAINER:PATH HOSTPATH
-            Copy files/folders from a container's filesystem to the host path
+            Build a container from a Shedfile
+        cp [OPTIONS] CONTAINER:PATH LOCALPATH | -
+           [OPTIONS] LOCALPATH | - CONTAINER:PATH
+           Copy files/folders between a container and the host
         create [OPTIONS] IMAGE [COMMAND] [ARG...]
             WARNING: replaced by 'build'
-        diff CONTAINER
+        diff [OPTIONS] CONTAINER
             Inspect changes on a container's filesystem
-        export CONTAINER
+        export [OPTIONS] CONTAINER
             Export the contents of a filesystem as a tar archive to STDOUT
         links [OPTIONS] CONTAINER
             Show direct links of a container
         list [OPTIONS]
             List containers
-        port CONTAINER [PRIVATE_PORT[/PROTO]]
+        port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
             Lookup the public-facing port that is NAT-ed to PRIVATE_PORT
         ps [OPTIONS]
             List containers
-        rename OLD_NAME NEW_NAME
+        rename [OPTIONS] OLD_NAME NEW_NAME
             Rename a container
         rm [OPTIONS] CONTAINER [CONTAINER...]
             Remove one or more containers
@@ -47,7 +48,7 @@
             Kill a running container
         logs [OPTIONS] CONTAINER
             Fetch the logs of a container
-        pause CONTAINER
+        pause [OPTIONS] CONTAINER [CONTAINER...]
             Pause all processes within a container
         restart [OPTIONS] CONTAINER [CONTAINER...]
             Restart a running container
@@ -57,15 +58,15 @@
             Start and attach to containers (or follow logs)
         start [OPTIONS] CONTAINER [CONTAINER...]
             Start a stopped container
-        stats [OPTIONS] CONTAINER
+        stats [OPTIONS] CONTAINER [CONTAINER...]
             Display a live stream of one or more containers' resource usage statistics
         stop [OPTIONS] CONTAINER [CONTAINER...]
             Stop a running container
         top CONTAINER [list OPTIONS]
             Lookup the running processes of a container
-        unpause CONTAINER
+        unpause CONTAINER [CONTAINER...]
             Unpause a paused container
-        wait CONTAINER [CONTAINER...]
+        wait [OPTIONS] CONTAINER [CONTAINER...]
             Block until a container stops, then print its exit code
     
     Run 'shed-container COMMAND --help' for more information on a command.
@@ -74,7 +75,7 @@
 
 ## build
 
-    Usage: shed-container build FILE
+    Usage: shed-container build [OPTIONS] FILE
     
     Build a new container from the Shedfile FILE
     

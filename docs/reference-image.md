@@ -15,7 +15,7 @@
             Show the history of an image
         images [OPTIONS] [REPOSITORY]
             List images
-        import URL|- [REPOSITORY[:TAG]]
+        import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]
             Create an empty filesystem image from the contents of a tarbal
         list [OPTIONS] [REPOSITORY]
             List images

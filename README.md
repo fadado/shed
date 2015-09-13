@@ -2,7 +2,7 @@
 
 Protect containers under the roof.
 
-## Motivations
+## Overview
 
 _Shed_ is a wrapper around the Docker client. This means that most
 commands just call the corresponding Docker command, but for all related
@@ -20,10 +20,10 @@ commands. In _Shed_ this work has been done in advance for you.
 Simply put the scripts in your `PATH`, o run `make install` in the scripts
 source directory (just in case, read before the `Makefile`).
 
-## Documentations and tests
+## Documentation and tests
 
-The directories [docs](./docs) and [tests](./tests) contains several files you must
-read and exercise.
+The directories [docs](./docs) and [tests](./tests) contains several files you
+should read and exercise.
 
 <!--
 vim:syntax=markdown:et:ts=4:sw=4:ai
