@@ -1,0 +1,1191 @@
+#!/bin/bash
+#
+# shed-container -- A wrapper for docker container management
+#
+# Joan Ordinas <jordinas@escoladeltreball.org>
+
+declare -r VERSION='0.9'	# shed-container version
+declare -r SELF=${0##*/}
+
+if [[ -e ./Shedfile ]]; then
+	declare -a PROJECT BUILDS IMAGES CONTAINERS
+	unset GROUPS; declare -A GROUPS
+	source ./Shedfile
+fi
+
+export LESS=\
+'--chop-long-lines '\
+'--clear-screen '\
+'--hilite-search '\
+'--HILITE-UNREAD '\
+'--ignore-case '\
+'--LONG-PROMPT '\
+'--RAW-CONTROL-CHARS '\
+'--squeeze-blank-lines '\
+'--status-column '\
+
+export LESS_TERMCAP_mb=$'\E[01;31m'		   # begin blinking
+export LESS_TERMCAP_md=$'\E[01;37m'        # begin bold
+export LESS_TERMCAP_me=$'\E[0m'            # end mode
+export LESS_TERMCAP_se=$'\E[0m'            # end standout-mode
+export LESS_TERMCAP_so=$'\E[01;44;33m'     # begin standout-mode - info box
+export LESS_TERMCAP_ue=$'\E[0m'            # end underline
+export LESS_TERMCAP_us=$'\E[01;32m'        # begin underline
+
+########################################################################
+# Utililies
+########################################################################
+
+function fatal {	# abort with message
+	echo 1>&2 "fatal: $*"
+	exit 1
+}
+
+function pager {		# colorized less
+	local color=$'\e''[92m'
+	[[ $TERM == 'screen-256color' ]] && color=$'\e''[32m'
+	[[ -z $PAGER ]] && PAGER=$(type -p less)
+	sed -e s/^/$color/ | $PAGER
+}
+
+function reversed {	# reverse words
+	local s=''
+	while (( $# > 0 )); do
+		s="$1 $s"
+		shift
+	done
+	echo $s
+}
+
+function strindex { # position of $2 in $1
+	local x=${1%%$2*}
+	[[ $x == $1 ]] && echo -1 || echo ${#x}
+}
+
+########################################################################
+# Status filters
+########################################################################
+
+declare -ri RUNNING=0 PAUSED=1 STOPPED=2 UNKNOWN=3
+
+function created {
+	docker ps --all \
+		| sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function latest {
+	docker ps --latest \
+		| sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function paused {
+	docker ps --filter status=paused \
+		| sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function running {
+	docker ps --filter status=running \
+		| sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function stopped {
+	docker ps --all --filter status=exited \
+		| sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function restarting {
+	docker ps --filter status=restarting \
+		| sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+########################################################################
+# Traversal
+########################################################################
+
+function links_from {
+	local container=$1 lnk spec lnks
+	local -A links
+
+	lnks=$(docker inspect --format '{{.HostConfig.Links}}' $container \
+			| sed -e 's/^\[//' -e 's/]$//')
+	[[ $lnks == '<no value>' ]] && return 1
+
+	for lnk in $lnks; do
+		spec=${lnk%:*}
+		spec=${spec#/}
+		links[$spec]=1
+	done
+	echo $(reversed ${!links[@]})
+	return 0
+}
+
+function pre_order {
+	local container=$1 c
+
+	echo $container
+	for c in $(links_from $container); do pre_order $c; done
+}
+
+function post_order {
+	local container=$1 c
+
+	for c in $(links_from $container); do post_order $c; done
+	echo $container
+}
+
+#?function links_to {
+#?	local container=$1
+#?	local c lnk lnks spec
+#?	local -A links
+#?
+#?	for c in $(created); do
+#?		lnks=$(docker inspect --format '{{.HostConfig.Links}}' $c \
+#?				| sed -e 's/^\[//' -e 's/]$//')
+#?		[[ $lnks == '<no value>' ]] && continue
+#?
+#?		for lnk in $lnks; do
+#?			spec=${lnk%:*}
+#?			spec=${spec#/}
+#?			[[ $container == $spec ]] && links[$c]=1
+#?		done
+#?	done
+#?	for lnk in ${!links[@]}; do	# id to name
+#?		docker ps --all --no-trunc \
+#?			| grep ^$lnk \
+#?			| sed -e 's/ \+$//' -e 's/^.* //'
+#?	done
+#?	return 0
+#?}
+
+########################################################################
+# Main and help
+########################################################################
+
+declare -i ALL=0			# -a
+declare    GROUP=''			# -g
+declare    LATEST=''		# -l
+declare -i PROPAGATE=0		# -p
+
+function main {
+	(( $# > 0 )) || help_main
+
+	local opt COMMAND
+
+	while getopts :ag:hlp-: opt; do
+		case $opt in
+			a) ALL=1 ;;
+			g) GROUP=$OPTARG ;;	
+			h) help_main ;;	
+			l) LATEST=$(latest) ;;
+			p) PROPAGATE=1 ;;
+			-)	case $OPTARG in
+					all) ALL=1 ;;
+					group=?*) GROUP=${OPTARG#group=} ;;
+					help) help_main ;;
+					latest) LATEST=$(latest) ;;
+					propagate) PROPAGATE=1 ;;
+					*) usage option "--$OPTARG" ;;
+				esac
+				;;
+			?) usage option "-$OPTARG" ;;
+		esac
+	done
+
+	[[ ALL -eq 1 && -n $GROUP ]] && fatal '--all conflicts with --group'
+	[[ ALL -eq 1 && -n $LATEST ]] && fatal '--all conflicts with --latest'
+	(( ALL && PROPAGATE )) && fatal '--all conflicts with --propagate'
+	[[ -n $GROUP && -n $LATEST ]] && fatal '--group conflicts with --latest'
+	[[ -n $GROUP && PROPAGATE -eq 1 ]] && fatal '--group conflicts with --propagate'
+
+	if [[ -n $GROUP ]]; then
+		[[ -e ./Shedfile ]] || fatal 'No Shedfile found for project in .'
+		# '.' means project name if defined or current directory name
+		[[ $GROUP == '.' ]] && GROUP=$PROJECT
+		[[ -z $GROUP ]] && GROUP=${PWD##*/}
+		GROUP=${GROUPS[$GROUP]}
+		[[ -n $GROUP ]] || fatal 'Group not defined'
+		# prefix groups with project name
+		if [[ -n $PROJECT ]]; then
+			local container new
+			for container in $GROUP; do
+				if [[ $PROJECT == $container ]]; then
+					new="$new $container"	# don't prefix main container
+				else
+					new="$new ${PROJECT}_$container"
+				fi
+			done
+			GROUP=$new
+		fi
+	fi
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	case $1 in
+		a|at|att|atta|attac|attach) COMMAND='attach' ;;
+		b|bu|bui|buil|build) COMMAND='build' ;;
+		cp) COMMAND='cp' ;;
+		create) COMMAND='create' ;;
+		d|di|dif|diff) COMMAND='diff' ;;
+		exp|expo|expor|export) COMMAND='export' ;;
+		en|ent|ente|enter) COMMAND='enter' ;;
+		e|ex|exe|exec) COMMAND='exec' ;;
+		k|ki|kil|kill) COMMAND='kill' ;;
+		lo|log|logs) COMMAND='logs' ;;
+		lin|link|links) COMMAND='links' ;;
+		l|li|lis|list) COMMAND='list' ;;
+		pa|pau|paus|pause) COMMAND='pause' ;;
+		p|po|por|port) COMMAND='port' ;;
+		ps) COMMAND='ps' ;;
+		ren|rena|renam|rename) COMMAND='rename' ;;
+		r|re|res|rest|resta|restar|restart) COMMAND='restart' ;;
+		rm) COMMAND='rm' ;;
+		run) COMMAND='run' ;;
+		sh|shi|ship) COMMAND='ship' ;;
+		stat|statu|status) COMMAND='status' ;;
+		stats) COMMAND=stats ;;
+		sto|stop) COMMAND='stop' ;;
+		s|st|sta|star|start) COMMAND='start' ;;
+		t|to|top) COMMAND='top' ;;
+		u|un|unp|unpa|unpau|unpaus|unpause) COMMAND='unpause' ;;
+		w|wa|wai|wait|wait) COMMAND='wait' ;;
+		*) usage command "$1" ;;
+	esac
+
+	shift
+	container_$COMMAND "$@"
+}
+
+function usage {
+	cat 1>&2 <<EOF
+Unknown $1: $2
+
+Usage: $SELF [-h | --help]
+       $SELF [OPTIONS] <command> [<args>]
+EOF
+	exit 1
+}
+
+function help_main {
+	cat <<EOF | pager
+Usage: $SELF [-h | --help
+       $SELF [OPTIONS] <command> [<args>]
+
+Options:
+    -a, --all       Apply command to all containers
+    -g, --group=""  Apply command to containers in named group
+    -h, --help      Help information
+    -l, --latest    Apply command to the latest created container
+    -p, --propagate Propagate command to linked containers
+
+General commands:
+    build [OPTIONS] FILE
+        Build an container from a Shedfile
+    cp CONTAINER:PATH HOSTPATH
+        Copy files/folders from a container's filesystem to the host path
+    create [OPTIONS] IMAGE [COMMAND] [ARG...]
+        WARNING: replaced by 'build'
+    diff CONTAINER
+        Inspect changes on a container's filesystem
+    export CONTAINER
+        Export the contents of a filesystem as a tar archive to STDOUT
+    links [OPTIONS] CONTAINER
+        Show direct links of a container
+    list [OPTIONS]
+        List containers
+    port CONTAINER [PRIVATE_PORT[/PROTO]]
+        Lookup the public-facing port that is NAT-ed to PRIVATE_PORT
+    ps [OPTIONS]
+        List containers
+    rename OLD_NAME NEW_NAME
+        Rename a container
+    rm [OPTIONS] CONTAINER [CONTAINER...]
+        Remove one or more containers
+    status CONTAINER
+        Show container status
+
+Runtime commands:
+    attach [OPTIONS] CONTAINER
+        Attach to a running container
+    enter CONTAINER [COMMAND [ARG...]]
+        Run a command in a running container using nsenter
+    exec [OPTIONS] [CONTAINER COMMAND [ARG...]]
+        Run a command in a running container
+    kill [OPTIONS] CONTAINER [CONTAINER...]
+        Kill a running container
+    logs [OPTIONS] CONTAINER
+        Fetch the logs of a container
+    pause CONTAINER
+        Pause all processes within a container
+    restart [OPTIONS] CONTAINER [CONTAINER...]
+        Restart a running container
+    run [OPTIONS] IMAGE [COMMAND] [ARG...]
+        WARNING: recommended 'start' after 'build'
+    ship [OPTIONS] CONTAINER
+        Start and attach to containers (or follow logs)
+    start [OPTIONS] CONTAINER [CONTAINER...]
+        Start a stopped container
+    stats [OPTIONS] CONTAINER
+        Display a live stream of one or more containers' resource usage statistics
+    stop [OPTIONS] CONTAINER [CONTAINER...]
+        Stop a running container
+    top CONTAINER [list OPTIONS]
+        Lookup the running processes of a container
+    unpause CONTAINER
+        Unpause a paused container
+    wait CONTAINER [CONTAINER...]
+        Block until a container stops, then print its exit code
+
+Run '$SELF COMMAND --help' for more information on a command.
+EOF
+	exit 1
+}
+
+declare -r -A EXTENSIONS=(
+    ['attach']="
+  $SELF -l attach [OPTIONS]"
+    ['cp']="
+  $SELF -l cp PATH HOSTPATH"
+    ['diff']="
+  $SELF -l diff"
+    ['export']="
+  $SELF -l export"
+    ['kill']="
+  $SELF -a    kill [OPTIONS]
+  $SELF -g=\"\" kill [OPTIONS]
+  $SELF -p    kill [OPTIONS] CONTAINER
+  $SELF -lp   kill [OPTIONS]
+  $SELF -l    kill [OPTIONS] [CONTAINER...]"
+    ['links']="
+  $SELF -l links [OPTIONS]"
+    ['logs']="
+  $SELF -l logs [OPTIONS]"
+    ['pause']="
+  $SELF -a    pause
+  $SELF -g=\"\" pause
+  $SELF -p    pause CONTAINER
+  $SELF -lp   pause
+  $SELF -l    pause [CONTAINER...]"
+    ['port']="
+  $SELF -l port [PRIVATE_PORT[/PROTO]]"
+    ['restart']="
+  $SELF -a    restart [OPTIONS]
+  $SELF -g=\"\" restart [OPTIONS]
+  $SELF -p    restart [OPTIONS] CONTAINER
+  $SELF -lp   restart [OPTIONS]
+  $SELF -l    restart [OPTIONS] [CONTAINER...]"
+    ['rm']="
+  $SELF -a    rm [OPTIONS]
+  $SELF -g=\"\" rm [OPTIONS]
+  $SELF -p    rm [OPTIONS] CONTAINER
+  $SELF -lp   rm [OPTIONS]
+  $SELF -l    rm [OPTIONS] [CONTAINER...]"
+    ['ship']="
+  $SELF -a    ship [OPTIONS]
+  $SELF -g=\"\" ship [OPTIONS]
+  $SELF -p    ship [OPTIONS] CONTAINER
+  $SELF -lp   ship [OPTIONS]
+  $SELF -l    ship [OPTIONS]"
+    ['start']="
+  $SELF -a    start [OPTIONS]
+  $SELF -g=\"\" start [OPTIONS]
+  $SELF -p    start [OPTIONS] CONTAINER
+  $SELF -lp   start [OPTIONS]
+  $SELF -l    start [OPTIONS] [CONTAINER...]"
+    ['status']="
+  $SELF -l status"
+    ['stop']="
+  $SELF -a    stop [OPTIONS]
+  $SELF -g=\"\" stop [OPTIONS]
+  $SELF -p    stop [OPTIONS] CONTAINER
+  $SELF -lp   stop [OPTIONS]
+  $SELF -l    stop [OPTIONS] [CONTAINER...]"
+    ['top']="
+  $SELF -l top [list OPTIONS]"
+    ['unpause']="
+  $SELF -a    unpause
+  $SELF -g=\"\" unpause
+  $SELF -p    unpause CONTAINER
+  $SELF -lp   unpause
+  $SELF -l    unpause [CONTAINER...]"
+    ['wait']="
+  $SELF -a    wait
+  $SELF -g=\"\" wait
+  $SELF -p    wait CONTAINER
+  $SELF -lp   wait
+  $SELF -l    wait [CONTAINER...]"
+)
+
+function help_command {
+	local alt cmd=$1 arg=$2
+
+	if [[ $cmd == *@* ]]; then
+		alt=${cmd#*@}	# alternative alias
+		cmd=${cmd%@*}
+	fi
+
+	if [[ $arg == '-h' || $arg == '--help' ]]; then
+		local o opt=${EXTENSIONS[$cmd]}
+		[[ -n $opt ]] && o="\nExtended usage:\n$opt\n"
+		{ docker $cmd --help 2>&1; echo -e "$o"; } \
+			| sed -e '1d' -e "s/docker\s\+$cmd/$SELF ${alt:-$cmd}/g" \
+			| pager
+		exit 1
+	fi
+}
+
+########################################################################
+# Commands
+########################################################################
+
+# attach [OPTIONS] CONTAINER
+# -l attach [OPTIONS]
+function container_attach {
+	help_command attach "$@"
+	[[ $# -gt 0 || -n $LATEST ]] || help_command attach -h
+
+	docker attach "$@" $LATEST
+}
+
+# build [OPTIONS] FILE
+function container_build {
+	local opt name=''
+	local -i remove=0
+
+	while getopts :hr-: opt; do
+		case $opt in
+			h) help_build ;;	
+			r) remove=1 ;;
+			-)	case $OPTARG in
+					help) help_build ;;
+					name=*) name=${OPTARG#name=} ;;
+					remove) remove=1 ;;
+					remove=true) remove=1 ;;
+					remove=false) remove=0 ;;
+					*) help_build ;;
+				esac
+				;;
+			?) help_build ;;
+		esac
+	done
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	(( $# == 1 )) || help_build		# FILE expected
+
+	local shedfile="$1"
+	[[ -e $shedfile ]] || shedfile="${shedfile}.shed"
+	[[ -e $shedfile ]] || fatal "Container Shedfile $shedfile not found"
+
+	if [[ $remove -eq 1 && -z $name ]]; then
+		name=${shedfile%.shed}
+		[[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
+	fi
+
+	unset HOSTNAME USER	# to be redefined
+
+	local		NAME
+	local		IMAGE
+	local		CIDFILE
+	local		CPUSET
+	local		CPU_SHARES
+	local		ENTRYPOINT
+	local		HOSTNAME
+	local		INTERACTIVE
+	local		IPC
+	local		MAC_ADDRESS
+	local		MEMORY
+	local		NET
+	local		PRIVILEGED
+	local		PUBLISH_ALL
+	local		RESTART
+	local		TTY
+	local		USER
+	local		WORKDIR
+	local	-A	ENVIRON		# ENV is reserved in the Posix shell
+	local	-a	ATTACH
+	local	-a	CMD
+	local	-a	CAP_ADD
+	local	-a	CAP_DROP
+	local	-a	DEVICE
+	local	-a	DNS
+	local	-a	DNS_SEARCH
+	local	-a	ENV_FILE
+	local	-a	EXPOSE
+	local	-a	HOST
+	local	-a	LINK
+	local	-a	LXC_CONF
+	local	-a	PUBLISH
+	local	-a	SECURITY_OPT
+	local	-a	VOLUME
+	local	-a	VOLUMES_FROM
+
+	source $shedfile	# source definitions
+
+	[[ -n $IMAGE ]] || fatal 'IMAGE must be defined'
+
+	if [[ -n $name ]]; then	# name provided
+		NAME="--name=$name"
+		[[ -n $CIDFILE ]] || CIDFILE="/var/tmp/${name}.cid"
+	fi
+	rm -f $CIDFILE
+
+	[[ -n $CIDFILE ]] &&		CIDFILE="--cidfile=$CIDFILE"
+	[[ -n $CPUSET ]] &&			CPUSET="--cpuset=$CPUSET"
+	[[ -n $CPU_SHARES ]] &&		CPU_SHARES="--cpu-shares=$CPU_SHARES"
+	[[ -n $ENTRYPOINT ]] &&		ENTRYPOINT="--entrypoint=$ENTRYPOINT"
+	[[ -n $HOSTNAME ]] &&		HOSTNAME="--hostname=$HOSTNAME"
+	[[ -n $INTERACTIVE ]] &&	INTERACTIVE="--interactive=$INTERACTIVE"
+	[[ -n $IPC ]] &&			IPC="--ipc=$IPC"
+	[[ -n $MAC_ADDRESS ]] &&	MAC_ADDRESS="--mac-address=$MAC_ADDRESS"
+	[[ -n $MEMORY ]] &&			MEMORY="--memory=$MEMORY"
+	[[ -n $NET ]] &&			NET="--net=$NET"
+	[[ -n $PRIVILEGED ]] &&		PRIVILEGED="--privileged=$PRIVILEGED"
+	[[ -n $PUBLISH_ALL ]] &&	PUBLISH_ALL="--publish-all=$PUBLISH_ALL"
+	[[ -n $RESTART ]] &&		RESTART="--restart=$RESTART"
+	[[ -n $TTY ]] &&			TTY="--tty=$TTY"
+	[[ -n $USER ]] &&			USER="--user=$USER"
+	[[ -n $WORKDIR ]] &&		WORKDIR="--workdir=$WORKDIR"
+
+	local k; local -i i
+	for k in ${!ENVIRON[@]}; do		ENVIRON[$k]="--env $k=${ENVIRON[$k]}"; done
+	for i in ${!ATTACH[@]}; do		DEVICE[i]="--attach=${ATTACH[i]}"; done
+	for i in ${!CAP_ADD[@]}; do		CAP_ADD[i]="--cap-add=${CAP_ADD[i]}"; done
+	for i in ${!CAP_DROP[@]}; do	CAP_DROP[i]="--cap-drop=${CAP_DROP[i]}"; done
+	for i in ${!DEVICE[@]}; do		DEVICE[i]="--device=${DEVICE[i]}"; done
+	for i in ${!DNS[@]}; do			DNS[i]="--dns=${DNS[i]}"; done
+	for i in ${!DNS_SEARCH[@]}; do	DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
+	for i in ${!ENV_FILE[@]}; do	ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
+	for i in ${!EXPOSE[@]}; do		EXPOSE[i]="--expose=${EXPOSE[i]}"; done
+	for i in ${!HOST[@]}; do		HOST[i]="--add-host=${HOST[i]}"; done
+	for i in ${!LINK[@]}; do		LINK[i]="--link=${LINK[i]}"; done
+	for i in ${!LXC_CONF[@]}; do	LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
+	for i in ${!PUBLISH[@]}; do		PUBLISH[i]="--publish=${PUBLISH[i]}"; done
+	for i in ${!SECURITY_OPT[@]}; do SECURITY_OPT[i]="--security-opt=${SECURITY_OPT[i]}"; done
+	for i in ${!VOLUMES_FROM[@]}; do VOLUMES_FROM[i]="--volumes-from=${VOLUMES_FROM[i]}"; done
+	for i in ${!VOLUME[@]}; do		VOLUME[i]="--volume=${VOLUME[i]}"; done
+
+	if (( remove )); then
+		[[ -n $name ]] || fatal 'must provide a name'
+		docker stop $name &>/dev/null
+		docker rm $name &>/dev/null
+	fi
+
+	docker create \
+		$CIDFILE \
+		$CPUSET \
+		$CPU_SHARES \
+		$ENTRYPOINT \
+		$HOSTNAME \
+		$INTERACTIVE \
+		$IPC \
+		$MAC_ADDRESS \
+		$MEMORY \
+		$NAME \
+		$NET \
+		$PRIVILEGED \
+		$PUBLISH_ALL \
+		$RESTART \
+		$TTY \
+		$USER \
+		$WORKDIR \
+		${ATTACH[@]} \
+		${CAP_ADD[@]} \
+		${CAP_DROP[@]} \
+		${DEVICE[@]} \
+		${DNS[@]} \
+		${DNS_SEARCH[@]} \
+		${ENVIRON[@]} \
+		${ENV_FILE[@]} \
+		${EXPOSE[@]} \
+		${HOST[@]} \
+		${LINK[@]} \
+		${LXC_CONF[@]} \
+		${PUBLISH[@]} \
+		${SECURITY_OPT[@]} \
+		${VOLUMES_FROM[@]} \
+		${VOLUME[@]} \
+		$IMAGE \
+		"${CMD[@]}"
+}
+
+function help_build {
+	cat <<EOF | pager
+Usage: $SELF build FILE
+
+Build a new container from the Shedfile FILE
+
+  --name=""             Assign a name to the container
+  -r, --remove=false    Remove container, stopping if necessary
+EOF
+	exit 1
+}
+
+# cp CONTAINER:PATH HOSTPATH
+# -l cp PATH HOSTPATH
+function container_cp {
+	help_command cp "$@"
+	(( $# == 2 )) || help_command cp -h
+
+	local cp=$1 hp=$2
+	[[ -n $LATEST ]] && cp="${LATEST}:$cp"
+	docker cp "$cp" "$hp"
+}
+
+# create [OPTIONS] IMAGE [COMMAND] [ARG...]
+function container_create {
+	help_command create "$@"
+	(( $# > 0 )) || help_command create -h
+
+	docker create "$@"
+}
+
+# diff CONTAINER
+# -l diff
+function container_diff {
+	help_command diff "$@"
+	[[ $# -eq 1 || -n $LATEST ]] || help_command diff -h
+	[[ $# -gt 0 && -n $LATEST ]] && help_command diff -h
+
+	docker diff $1$LATEST	# $1 or $LATEST
+}
+
+# enter CONTAINER [COMMAND [ARG...]]
+function container_enter {
+	local opt
+
+	while getopts :h-: opt; do
+		case $opt in
+			h) help_enter ;;	
+			-)	case $OPTARG in
+					help) help_enter ;;
+					*) help_enter ;;
+				esac
+				;;
+			?) help_enter ;;
+		esac
+	done
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	(( UID == 0 )) || fatal 'must be root'
+
+	local container=$1; shift
+	local pid=$(docker inspect --format '{{.State.Pid}}' $container)
+	[[ -n $pid ]] || exit 1
+
+	local args=(--target $pid --mount --uts --ipc --net --pid --)
+	local environ=$(cat /proc/$pid/environ | xargs -0 | grep '=')
+
+	if (( $# == 0 )); then
+		#nsenter "${args[@]}" env --ignore-environment $environ su --preserve-environment root
+		nsenter "${args[@]}" env --ignore-environment $environ /bin/sh
+	else
+		nsenter "${args[@]}" env --ignore-environment $environ "$@"
+	fi
+}
+
+function help_enter {
+	cat <<EOF | pager
+Usage: $SELF enter CONTAINER [COMMAND [ARG...]]
+
+Run a command in a running container using nsenter
+EOF
+	exit 1
+}
+
+# exec [OPTIONS] [CONTAINER COMMAND [ARG...]]
+function container_exec {
+	help_command exec "$@"
+	(( $# > 0 )) || help_command exec -h
+
+	if (( $# == 1 )); then
+		docker exec -it $1 /bin/sh
+	else
+		docker exec "$@"
+	fi
+}
+
+# export CONTAINER
+# -l export
+function container_export {
+	help_command export "$@"
+	[[ $# -eq 1 || -n $LATEST ]] || help_command export -h
+	[[ $# -gt 0 && -n $LATEST ]] && help_command export -h
+
+	docker export $1$LATEST	# $1 or $LATEST
+}
+
+# links [OPTIONS] CONTAINER
+# -l links [OPTIONS]
+function container_links {
+	local opt
+	local -i post=0
+
+	while getopts :hp-: opt; do
+		case $opt in
+			p) post=1 ;;
+			h) help_links ;;	
+			-)	case $OPTARG in
+					post) post=1 ;;
+					post=true) post=1 ;;
+					post=false) post=0 ;;
+					help) help_links ;;
+					*) help_links ;;
+				esac
+				;;
+			?) help_links ;;
+		esac
+	done
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	[[ $# -eq 1 || -n $LATEST ]] || help_links
+	[[ $# -gt 0 && -n $LATEST ]] && help_links
+
+	if (( post )); then
+		echo $(post_order $1$LATEST)	# $1 or $LATEST
+	else
+		echo $(pre_order $1$LATEST)	# $1 or $LATEST
+	fi
+}
+
+function help_links {
+	cat <<EOF | pager
+Usage: $SELF links [OPTIONS] CONTAINER
+
+Show links from CONTAINER in pre-order (root first) or post-order (root last)
+
+    -p, --post=false    Show links in post-order
+EOF
+	exit 1
+}
+
+# list [OPTIONS]
+function container_list {
+	help_command ps@list "$@"
+
+	docker ps "$@" \
+		| { local headers line
+			read headers
+			local -i p1=$(strindex "$headers" CONTAINER)
+			local -i p2=$(strindex "$headers" IMAGE)
+			local -i p3=$(strindex "$headers" COMMAND)
+			local -i p4=$(strindex "$headers" CREATED)
+			local -i p5=$(strindex "$headers" STATUS)
+			local -i p6=$(strindex "$headers" PORTS)
+			local -i p7=$(strindex "$headers" NAMES)
+			sort --key 1.$p7 - | while read -r line; do
+				echo 'NAMES:       ' ${line:$p7}
+				echo 'IMAGE:       ' ${line:$p2:$((p3-p2))}
+				echo 'CONTAINER ID:' ${line:$p1:$((p2-p1))}
+				echo 'CREATED:     ' ${line:$p4:$((p5-p4))}
+				echo 'STATUS:      ' ${line:$p5:$((p6-p5))}
+				echo 'PORTS:       ' ${line:$p6:$((p7-p6))}
+				echo 'COMMAND:     ' ${line:$p3:$((p4-p3))}
+				echo
+			done
+		} \
+		| pager
+}
+
+#  logs [OPTIONS] CONTAINER
+# -l logs [OPTIONS]
+function container_logs {
+	help_command logs "$@"
+	[[ $# -gt 0 || -n $LATEST ]] || help_command logs -h
+
+	docker logs "$@" $LATEST
+}
+
+# port CONTAINER [PRIVATE_PORT[/PROTO]]
+# -l port [PRIVATE_PORT[/PROTO]]
+function container_port {
+	help_command port "$@"
+	[[ $# -gt 0 || -n $LATEST ]] || help_command port -h
+	[[ $# -gt 1 && -n $LATEST ]] && help_command port -h
+
+	docker port $LATEST "$@"
+}
+
+# ps [OPTIONS]
+function container_ps {
+	help_command ps "$@"
+
+	docker ps "$@" \
+		| { local headers line
+			read headers
+			local -i p1=$(strindex "$headers" CONTAINER)
+			local -i p2=$(strindex "$headers" IMAGE)
+			local -i p3=$(strindex "$headers" COMMAND)
+			local -i p4=$(strindex "$headers" CREATED)
+			local -i p5=$(strindex "$headers" STATUS)
+			local -i p6=$(strindex "$headers" PORTS)
+			local -i p7=$(strindex "$headers" NAMES)
+			echo CONTAINER ID$'\t'IMAGE$'\t'COMMAND$'\t'CREATED$'\t'STATUS$'\t'PORTS$'\t'NAMES
+			sort --key 1.$p7 - | while read -r line; do
+				echo -n ${line:$p1:$((p2-p1))}$'\t'
+				echo -n ${line:$p2:$((p3-p2))}$'\t'
+				echo -n ${line:$p3:$((p4-p3))}$'\t'
+				echo -n ${line:$p4:$((p5-p4))}$'\t'
+				echo -n ${line:$p5:$((p6-p5))}$'\t'
+				echo -n ${line:$p6:$((p7-p6))}$'\t'
+				echo ${line:$p7}
+			done
+	  	} \
+		| column --table --separator $'\t'
+}
+
+# rename OLD_NAME NEW_NAME
+function container_rename {
+	help_command rename "$@"
+	(( $# > 0 )) || help_command rename -h
+
+	docker rename "$@"
+}
+
+# run [OPTIONS] IMAGE [COMMAND] [ARG...]
+function container_run {
+	help_command run "$@"
+	(( $# > 0 )) || help_command run -h
+
+	docker run "$@"
+}
+
+#
+# stats [OPTIONS] CONTAINER
+function container_stats {
+	help_command stats "$@"
+	(( $# > 0 )) || help_command stats -h
+
+	docker stats "$@"
+}
+
+# top CONTAINER [list OPTIONS]
+# -l top [list OPTIONS]
+function container_top {
+	help_command top "$@"
+	[[ $# -gt 0 || -n $LATEST ]] || help_command top -h
+	[[ $# -gt 0 && -n $LATEST ]] && help_command top -h
+
+	docker top $LATEST "$@" 2>&1 \
+		| sed -e 's/ \+$//' -e 's/  \+/\t/g' \
+		| column --table --separator $'\t' \
+		| pager
+}
+
+########################################################################
+# -agpl commands
+
+# `cmd` [OPTIONS] CONTAINER [CONTAINER...]
+# Extensions:
+#	-a    `cmd` [OPTIONS]
+#	-g="" `cmd` [OPTIONS]
+#	-p    `cmd` [OPTIONS] CONTAINER
+#	-lp   `cmd` [OPTIONS]
+#	-l    `cmd` [OPTIONS] [CONTAINER...]
+function cmd_agpl {
+	local cmd=$1 order=$2 who=$3; shift 3
+	help_command $cmd "$@"
+
+	if (( ALL )); then
+		local ctn=$($who)
+		[[ -n $ctn ]] && docker $cmd "$@" $ctn
+
+	elif [[ -n $GROUP ]]; then
+		local grp=$GROUP	# perhaps is not necessary to reverse?
+		[[ $order == 'pre' ]] && grp=$(reversed $grp)
+		docker $cmd "$@" $grp
+
+	elif (( PROPAGATE )); then
+		local container
+		if [[ -n $LATEST ]]; then
+			container=$LATEST
+		else
+			(( $# > 0 )) || help_command $cmd -h
+			container=${@: -1}		# last parameter must be container
+			[[ $container != -* ]] || help_command $cmd -h
+			set -- "${@:1:$#-1}"	# remove last parameter
+		fi
+		docker $cmd "$@" $(${order}_order $container)
+
+	else
+		[[ $# -gt 0 || -n $LATEST ]] || help_command $cmd -h
+		docker $cmd "$@" $LATEST
+	fi
+}
+
+function container_kill { cmd_agpl kill post running "$@"; }
+function container_restart { cmd_agpl restart post running "$@"; }
+function container_rm { cmd_agpl rm pre stopped "$@"; }
+function container_start { cmd_agpl start post stopped "$@"; }
+function container_stop { cmd_agpl stop pre running "$@"; }
+function container_wait { cmd_agpl wait post running "$@"; }
+
+# ship [OPTIONS] CONTAINER
+# Extensions:
+#	-a    ship [OPTIONS]
+#	-g="" ship [OPTIONS]
+#	-p    ship [OPTIONS] CONTAINER
+#	-lp   ship [OPTIONS]
+#	-l    ship [OPTIONS]
+function container_ship {
+	local opt action='ship_start'
+	local -i colorize=1
+
+	while getopts :hf-: opt; do
+		case $opt in
+			f) action=ship_logs ;;
+			h) help_ship ;;	
+			-)	case $OPTARG in
+					no-color) colorize=0 ;;
+					no-color=true) colorize=0 ;;
+					no-color=false) colorize=1 ;;
+					follow) action=ship_logs ;;
+					follow=true) action=ship_logs ;;
+					follow=false) action=ship_start ;;
+					help) help_ship ;;
+					*) help_ship ;;
+				esac
+				;;
+			?) help_ship ;;
+		esac
+	done
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	(( colorize )) && trap "echo -en '\e[0m'" EXIT	# reset text color
+
+	if (( ALL )); then
+		(( $# == 0 )) || help_ship
+		local ctn=$(running)
+		[[ -n $ctn ]] && $action $colorize $ctn
+
+	elif [[ -n $GROUP ]]; then
+		(( $# == 0 )) || help_ship
+		$action $colorize $GROUP
+
+	elif (( PROPAGATE )); then
+		[[ $# -eq 1 || -n $LATEST ]] || help_ship
+		[[ $# -gt 0 && -n $LATEST ]] && help_ship
+		$action $colorize $(post_order $1$LATEST)
+
+	else
+		[[ $# -eq 1 || -n $LATEST ]] || help_ship
+		[[ $# -gt 0 && -n $LATEST ]] && help_ship
+		$action $colorize $1$LATEST
+	fi
+}
+
+function ship_logs {
+	local colorize=$1; shift
+	local containers=$@
+
+	cat <(ship $colorize 'logs --tail=10 --timestamps --follow' $containers)
+}
+
+function ship_start {
+	local colorize=$1; shift
+	local containers=$@
+
+	trap "docker kill -s INT $containers &>/dev/null" INT
+
+	cat <(ship $colorize 'start --attach' $containers)
+
+	sleep 0.2 && docker kill -s TERM $containers &>/dev/null
+	sleep 0.2 && docker kill -s KILL $containers &>/dev/null
+
+	trap - INT; kill -s INT $$	# default handler
+}
+
+function ship {
+	local container colorize=$1 cmd=$2; shift 2
+
+	local -i base=90 c=2
+	local normal bold
+	[[ $TERM == 'screen-256color' ]] && base=30
+
+	for container in ${@:1:${#@}-1}; do
+		if (( colorize )); then
+			bold=$'\e''[1;'$((base + c + 1))'m'
+			normal=$'\e''[0;'$((base + c + 1))'m'
+			c=$(( (c+1) % 6 ))	# 6 colors without black nor white
+		fi
+		# all but last container in background
+		docker $cmd $container 2>&1 \
+			| sed --unbuffered -e "s/^/$bold$container:$normal  /" &
+		sleep 0.1
+	done
+
+	# last container in foreground
+	container=${@: -1}
+	if (( colorize )); then
+		bold=$'\e''[1;'$((base + c + 1))'m'
+		normal=$'\e''[0;'$((base + c + 1))'m'
+	fi
+	docker $cmd $container 2>&1 \
+		| sed --unbuffered -e "s/^/$bold$container:$normal  /"
+}
+
+function help_ship {
+	cat <<EOF | pager
+Usage: $SELF ship [OPTIONS] CONTAINER
+
+Start and attach to containers (or follow logs)
+
+    -f, --follow=false    Follow container logs
+    --no-color=false      Produce monochrome output
+
+Extended usage:
+${EXTENSIONS[ship]}
+
+EOF
+	exit 1
+}
+
+# `cmd` CONTAINER
+# Extensions:
+#	-a    `cmd`
+#	-g="" `cmd`
+#	-p    `cmd` CONTAINER
+#	-lp   `cmd`
+#	-l    `cmd`
+function cmd_agpl1 {
+	local cmd=$1 order=$2 who=$3; shift 3
+	help_command $cmd "$@"
+
+	local container
+
+	if (( ALL )); then
+		for container in $($who); do
+			cond_$cmd $container
+		done
+
+	elif [[ -n $GROUP ]]; then
+		local grp=$GROUP
+		[[ $order == 'pre' ]] && grp=$(reversed $grp)
+		for container in $grp; do
+			cond_$cmd $container
+		done
+
+	elif (( PROPAGATE )); then
+		# restricted to only one container
+		[[ $# -eq 1 || -n $LATEST ]] || help_command $cmd -h
+		[[ $# -gt 0 && -n $LATEST ]] && help_command $cmd -h
+		for container in $(${order}_order $1$LATEST); do	# $1 or $LATEST
+			cond_$cmd $container
+		done
+
+	else
+		[[ $# -eq 1 || -n $LATEST ]] || help_command $cmd -h
+		[[ $# -gt 0 && -n $LATEST ]] && help_command $cmd -h
+		cond_$cmd $1$LATEST	# $1 or $LATEST
+	fi
+}
+
+function cond_pause {
+	local container=$1
+
+	status $container &>/dev/null
+	(( $? == $RUNNING )) && docker pause $container
+}
+
+function cond_unpause {
+	local container=$1
+
+	status $container &>/dev/null
+	(( $? == $PAUSED )) && docker unpause $container
+}
+
+function container_pause { cmd_agpl1 pause pre running "$@"; }
+function container_unpause { cmd_agpl1 unpause post paused "$@"; }
+
+# status CONTAINER
+# Extensions:
+#	-a    status
+#	-g="" status
+#	-p    status CONTAINER
+#	-lp   status
+#	-l    status
+function container_status {
+	local opt
+
+	while getopts :h-: opt; do
+		case $opt in
+			h) help_status ;;	
+			-)	case $OPTARG in
+					help) help_status ;;
+					*) help_status ;;
+				esac
+				;;
+			?) help_status ;;
+		esac
+	done
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	if (( ALL )); then
+		for container in $(created | sort); do
+			status $container
+		done
+
+	elif [[ -n $GROUP ]]; then
+		for container in $GROUP; do
+			status $container
+		done
+
+	elif (( PROPAGATE )); then
+		# restricted to only one container
+		[[ $# -eq 1 || -n $LATEST ]] || help_status
+		[[ $# -gt 0 && -n $LATEST ]] && help_status
+		for container in $(post_order $1$LATEST); do	# $1 or $LATEST
+			status $container
+		done
+
+	else
+		[[ $# -eq 1 || -n $LATEST ]] || help_status
+		[[ $# -gt 0 && -n $LATEST ]] && help_status
+		status $1$LATEST	# $1 or $LATEST
+	fi
+}
+
+function status {
+	local state ip container=$1
+
+	state=$(docker inspect --format="{{.State.Running}}" $container)
+	[[ -n $state ]] || return $UNKNOWN
+	
+	if [[ $state == 'false' ]]; then
+		echo 1>&2 "$container: stopped"
+		return $STOPPED
+	fi
+	
+	state=$(docker inspect --format="{{.State.Paused}}" $container)
+	ip=$(docker inspect --format '{{.NetworkSettings.IPAddress}}' $container)
+
+	if [[ $state == 'true' ]]; then
+		echo 1>&2 "$container: paused with IP $ip"
+		return $PAUSED
+	fi
+
+	echo 1>&2 "$container: running with IP $ip"
+	return $RUNNING
+}
+
+function help_status {
+	cat <<EOF | pager
+Usage: $SELF status CONTAINER
+
+Show CONTAINER status
+EOF
+	exit 1
+}
+
+########################################################################
+# Call main
+########################################################################
+
+main "$@"
+
+exit $?
+
+# vim:syntax=sh:ai:sw=4:ts=4

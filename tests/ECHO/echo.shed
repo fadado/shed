@@ -1,0 +1,16 @@
+########################################################################
+# Container Shedfile for provider example
+########################################################################
+
+# Base image
+IMAGE="shed/echo:latest"
+
+# Set environment variables
+ENVIRON=( 
+	[PATH]='/bin:/usr/bin'
+)
+
+# Container host name
+HOSTNAME=$(basename $BASH_SOURCE .shed)
+
+# vim:syntax=sh:ai:sw=8:ts=8

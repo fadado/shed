@@ -1,0 +1,27 @@
+########################################################################
+# Shedfile for supervised service
+########################################################################
+
+# prefixed to image names if defined
+PROJECT=${PWD##*/}
+
+# images to pull
+IMAGES=(
+	'centos:7'
+)
+
+# relative paths to images to build
+BUILDS=(
+	'.'
+)
+
+# containers to create (order is significant)
+CONTAINERS=(
+	'supervised'
+)
+
+# named groups of containers
+GROUPS=( 
+)
+
+# vim:syntax=sh:ai:sw=4:ts=4

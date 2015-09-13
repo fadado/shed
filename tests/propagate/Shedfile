@@ -1,0 +1,15 @@
+########################################################################
+# Shedfile for 'propagate' test
+########################################################################
+
+PROJECT='p'
+
+IMAGES=('busybox:latest')
+
+BUILDS=()
+
+CONTAINERS=(a c e d b h i g f)	# post-order
+
+GROUPS=([$PROJECT]="${CONTAINERS[@]}")
+
+# vim:syntax=sh:ai:sw=4:ts=4

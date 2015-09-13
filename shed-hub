@@ -1,0 +1,359 @@
+#!/bin/bash
+#
+# shed-hub -- A wrapper for some docker commands
+#
+# Joan Ordinas <jordinas@escoladeltreball.org>
+
+declare -r VERSION='0.9'	# shed-hub version
+declare -r SELF=${0##*/}
+
+if [[ -e ./Shedfile ]]; then
+	declare -a PROJECT BUILDS IMAGES CONTAINERS
+	unset GROUPS; declare -A GROUPS
+	source ./Shedfile
+fi
+
+declare -r IMAGE_USER='shed'
+
+export LESS=\
+'--chop-long-lines '\
+'--clear-screen '\
+'--hilite-search '\
+'--HILITE-UNREAD '\
+'--ignore-case '\
+'--LONG-PROMPT '\
+'--RAW-CONTROL-CHARS '\
+'--squeeze-blank-lines '\
+'--status-column '\
+
+export LESS_TERMCAP_mb=$'\E[01;31m'		   # begin blinking
+export LESS_TERMCAP_md=$'\E[01;37m'        # begin bold
+export LESS_TERMCAP_me=$'\E[0m'            # end mode
+export LESS_TERMCAP_se=$'\E[0m'            # end standout-mode
+export LESS_TERMCAP_so=$'\E[01;44;33m'     # begin standout-mode - info box
+export LESS_TERMCAP_ue=$'\E[0m'            # end underline
+export LESS_TERMCAP_us=$'\E[01;32m'        # begin underline
+
+########################################################################
+# Utililies
+########################################################################
+
+function fatal {	# abort with message
+	echo 1>&2 "fatal: $*"
+	exit 1
+}
+
+function pager {		# colorized less
+	local color=$'\e''[92m'
+	[[ $TERM == 'screen-256color' ]] && color=$'\e''[32m'
+	[[ -z $PAGER ]] && PAGER=$(type -p less)
+	sed -e s/^/$color/ | $PAGER
+}
+
+########################################################################
+# Main and help
+########################################################################
+
+function main {
+	(( $# > 0 )) || help_main
+
+	local opt COMMAND
+
+	while getopts :h-: opt; do
+		case $opt in
+			h) help_main ;;	
+			-)	case $OPTARG in
+					help) help_main ;;
+					*) usage option "--$OPTARG" ;;
+				esac
+				;;
+			?) usage option "-$OPTARG" ;;
+		esac
+	done
+
+	shift $((OPTIND-1)); OPTIND=1
+
+	case $1 in
+		b|bu|bui|buil|build) COMMAND='build' ;;
+		e|ev|eve|even|event|events) COMMAND='events' ;;
+		i|in|inf|info) COMMAND='info' ;;
+		ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
+		lo|log|logi|login) COMMAND='login' ;;
+		logo|logou|logout) COMMAND='logout' ;;
+		p|pu|pul|pull) COMMAND='pull' ;;
+		pus|push) COMMAND='push' ;;
+		q|qu|que|quer|query) COMMAND='query' ;;
+		s|se|sea|sear|searc|search) COMMAND='search' ;;
+		v|ve|ver|vers|versi|versio|version) COMMAND='version' ;;
+		*) usage command "$1" ;;
+	esac
+
+	shift
+	hub_$COMMAND "$@"
+}
+
+function usage {
+	cat 1>&2 <<EOF
+Unknown $1: $2
+
+Usage: $SELF [-h | --help]
+       $SELF <command> [<args>]
+EOF
+	exit 1
+}
+
+function help_main  {
+	cat <<EOF | pager
+Usage: $SELF [-h | --help]
+       $SELF <command> [<args>]
+
+Options:
+    -h, --help  Help information
+
+Commands:
+    build [OPTIONS]
+        Build a project from the Shedfile source
+    events [OPTIONS]
+        Get real time events from the server
+    info
+        Display system-wide information
+    inspect [OPTIONS] CONTAINER | IMAGE [CONTAINER | IMAGE...]
+        WARNING: recommended 'query' instead
+    login [OPTIONS] [SERVER]
+        Register or log in to a Docker registry server
+    logout [SERVER]
+        Log out from a Docker registry server
+    pull [OPTIONS] NAME[:TAG]
+        Pull an image or a repository from a Docker registry server
+    push NAME[:TAG]
+        Push an image or a repository to a Docker registry server
+    query [OPTIONS] CONTAINER | IMAGE [QUERY]
+        Return YAML formated information on a container or image
+    search [OPTIONS] TERM
+        Search for an image on the Docker Hub
+    version
+        Show the Docker version information
+
+Run '$SELF COMMAND --help' for more information on a command.
+EOF
+	exit 1
+}
+
+function help_command {
+	local alt cmd=$1 arg=$2
+
+	if [[ $arg == '-h' || $arg == '--help' ]]; then
+		docker $cmd --help 2>&1 \
+			| sed -e '1d' -e "s/docker\s\+$cmd/$SELF $cmd/g" \
+			| pager
+		exit 1
+	fi
+}
+
+########################################################################
+# Commands
+########################################################################
+
+# build [OPTIONS]
+function hub_build {
+	local opt nocache quiet
+	local -i remove=0
+
+	while getopts :hrq-: opt; do
+		case $opt in
+			r) remove=1 ;;
+			q) quiet='--quiet' ;;
+			h) help_build ;;	
+			-)	case $OPTARG in
+					no-cache) nocache='--no-cache=true' ;;
+					no-cache=true) nocache='--no-cache=true' ;;
+					no-cache=false) nocache='--no-cache=false' ;;
+					remove) remove=1 ;;
+					remove=true) remove=1 ;;
+					remove=false) remove=0 ;;
+					quiet) quiet='--quiet' ;;
+					quiet=true) quiet='--quiet' ;;
+					quiet=false) quiet='' ;;
+					help) help_build ;;
+					*) help_build ;;
+				esac
+				;;
+			?) help_build ;;
+		esac
+	done
+
+	#shift $((OPTIND-1)); OPTIND=1
+
+	[[ -e ./Shedfile ]] || fatal 'No Shedfile found for project in .'
+
+	# pull images
+	local image
+	for image in ${IMAGES[@]}
+	do
+		docker pull $image
+	done
+
+	# build images
+	for image in ${BUILDS[@]}
+	do
+		[[ -d $image ]] || fatal "Directory $image does not exists"
+		cd $image
+		local -l name=${PWD##*/}
+		[[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
+		docker build $quiet $nocache --tag ${IMAGE_USER}/${name} .	# use Dockerfile
+		cd $OLDPWD
+	done
+
+	# build containers
+	local container
+	for container in ${CONTAINERS[@]}
+	do
+		local -l name=$container
+		[[ -e ${container}.shed ]] || fatal "Container Shedfile ${container}.shed not found"
+		[[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
+		if (( remove )); then
+			docker stop $name &>/dev/null
+			docker rm $name &>/dev/null
+		fi
+		shed-container build --name=$name ${container}.shed
+	done
+}
+
+function help_build {
+	cat <<EOF | pager
+Usage: $SELF build [OPTIONS]
+
+Build a project from the Shedfile source
+
+  --no-cache=false       Do not use cache when building the images
+  -r, --remove=false     Remove containers, stopping if necessary
+  -q, --quiet=false      Suppress the verbose output generated by the containers
+EOF
+	exit 1
+}
+
+# events [OPTIONS]
+function hub_events {
+	help_command events "$@"
+
+	docker events "$@"
+}
+
+# info
+function hub_info {
+	help_command info "$@"
+	(( $# == 0 )) || help_command info -h
+
+	docker info | pager
+}
+
+# inspect [OPTIONS] CONTAINER | IMAGE [CONTAINER | IMAGE...]
+function hub_inspect {
+	help_command inspect "$@"
+	(( $# > 0 )) || help_command inspect -h
+
+	docker inspect "$@" | python -m 'json.tool' | pager
+}
+
+# query [OPTIONS] CONTAINER | IMAGE
+function hub_query {
+	local opt
+
+	while getopts :h-: opt; do
+		case $opt in
+			h) help_query ;;	
+			-)	case $OPTARG in
+					help) help_query ;;
+					*) help_query ;;
+				esac
+				;;
+			?) help_query ;;
+		esac
+	done
+
+	#shift $((OPTIND-1)); OPTIND=1
+	(( $# > 0 )) || help_query
+
+	local j2y='import sys, yaml, json; yaml.dump(json.load(sys.stdin), sys.stdout, indent=4, width=200, default_flow_style=False)'
+
+	local fmt='{{json .}}' pager=pager
+	if (( $# == 2 )); then
+		fmt="{{json .$2}}"
+		pager=cat
+	fi
+
+	docker inspect --format "$fmt" $1 2>&1 1>/dev/null || exit $?
+
+	docker inspect --format "$fmt" $1 \
+		| python -c "$j2y" \
+		| sed	-e 's/\!\!python\/unicode //g' \
+				-e "s/''/__Q__/g;s/'//g;s/__Q__/''/g" \
+				-e '/^\.\.\.$/d' \
+		| $pager
+}
+
+function help_query {
+	cat <<EOF | pager
+Usage: query [OPTIONS] CONTAINER | IMAGE [QUERY]
+
+Return YAML formated information on a container or image
+EOF
+	exit 1
+}
+
+# login [OPTIONS] [SERVER]
+function hub_login {
+	help_command login "$@"
+
+	docker login "$@"
+}
+
+# logout [SERVER]
+function hub_logout {
+	help_command logout "$@"
+	(( $# < 2 )) || help_command logout -h
+
+	docker logout "$1"
+}
+
+# pull [OPTIONS] NAME[:TAG]
+function hub_pull {
+	help_command pull "$@"
+	(( $# > 0 )) || help_command pull -h
+
+	docker pull "$@"
+}
+
+# push NAME[:TAG]
+function hub_push {
+	help_command push "$@"
+	(( $# == 1 )) || help_command push -h
+
+	docker push "$1"
+}
+
+# search [OPTIONS] TERM
+function hub_search {
+	help_command search "$@"
+	(( $# > 0 )) || help_command search -h
+
+	docker search "$@" 2>&1 | pager
+}
+
+# version
+function hub_version {
+	help_command version "$@"
+	(( $# == 0 )) || help_command version -h
+
+	docker version | pager
+}
+
+########################################################################
+# Call main
+########################################################################
+
+main "$@"
+
+exit $?
+
+# vim:syntax=sh:ai:sw=4:ts=4

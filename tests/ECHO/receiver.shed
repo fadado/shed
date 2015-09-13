@@ -1,0 +1,28 @@
+########################################################################
+# Container Shedfile for receiver example
+########################################################################
+
+# Base image
+IMAGE='busybox:latest'
+
+# Set environment variables
+ENVIRON=(
+	[PATH]='/bin:/usr/bin'
+)
+
+# Container host name
+HOSTNAME=$(basename $BASH_SOURCE .shed)
+
+# Add link to another container in the form of name:alias
+LINK=(
+	'echo:echo.escoladeltreball.org'
+	'echo:echo2'
+)
+
+# Keep STDIN open even if not attached
+INTERACTIVE='true'
+
+# Allocate a pseudo-TTY
+TTY='true'
+
+# vim:syntax=sh:ai:sw=4:ts=4
