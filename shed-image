@@ -4,13 +4,13 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9'	# Shed version
+declare -r VERSION='0.9'    # Shed version
 declare -r SELF=${0##*/}
 
 #?if [[ -e ./Shedfile ]]; then
-#?	declare -a PROJECT BUILDS IMAGES CONTAINERS
-#?	unset GROUPS; declare -A GROUPS
-#?	source ./Shedfile
+#?  declare -a PROJECT BUILDS IMAGES CONTAINERS
+#?  unset GROUPS; declare -A GROUPS
+#?  source ./Shedfile
 #?fi
 
 export LESS=\
@@ -24,7 +24,7 @@ export LESS=\
 '--squeeze-blank-lines '\
 '--status-column '\
 
-export LESS_TERMCAP_mb=$'\E[01;31m'		   # begin blinking
+export LESS_TERMCAP_mb=$'\E[01;31m'        # begin blinking
 export LESS_TERMCAP_md=$'\E[01;37m'        # begin bold
 export LESS_TERMCAP_me=$'\E[0m'            # end mode
 export LESS_TERMCAP_se=$'\E[0m'            # end standout-mode
@@ -36,21 +36,21 @@ export LESS_TERMCAP_us=$'\E[01;32m'        # begin underline
 # Utililies
 ########################################################################
 
-function fatal {	# abort with message
-	echo 1>&2 "fatal: $*"
-	exit 1
+function fatal {    # abort with message
+    echo 1>&2 "fatal: $*"
+    exit 1
 }
 
-function pager {		# colorized less
-	local color=$'\e''[92m'
-	[[ $TERM == 'screen-256color' ]] && color=$'\e''[32m'
-	[[ -z $PAGER ]] && PAGER=$(type -p less)
-	sed -e s/^/$color/ | $PAGER
+function pager {        # colorized less
+    local color=$'\e''[92m'
+    [[ $TERM == 'screen-256color' ]] && color=$'\e''[32m'
+    [[ -z $PAGER ]] && PAGER=$(type -p less)
+    sed -e s/^/$color/ | $PAGER
 }
 
 function strindex { # position of $2 in $1
-	local x=${1%%$2*}
-	[[ $x == $1 ]] && echo -1 || echo ${#x}
+    local x=${1%%$2*}
+    [[ $x == $1 ]] && echo -1 || echo ${#x}
 }
 
 ########################################################################
@@ -58,55 +58,55 @@ function strindex { # position of $2 in $1
 ########################################################################
 
 function main {
-	(( $# > 0 )) || help_main
+    (( $# > 0 )) || help_main
 
-	local opt COMMAND
+    local opt COMMAND
 
-	while getopts :h-: opt; do
-		case $opt in
-			h) help_main ;;	
-			-)	case $OPTARG in
-					help) help_main ;;
-					*) usage option "--$OPTARG" ;;
-				esac
-				;;
-			?) usage option "-$OPTARG" ;;
-		esac
-	done
+    while getopts :h-: opt; do
+        case $opt in
+            h) help_main ;; 
+            -)  case $OPTARG in
+                    help) help_main ;;
+                    *) usage option "--$OPTARG" ;;
+                esac
+                ;;
+            ?) usage option "-$OPTARG" ;;
+        esac
+    done
 
-	shift $((OPTIND-1)); OPTIND=1
+    shift $((OPTIND-1)); OPTIND=1
 
-	case $1 in
-		b|bu|bui|buil|build) COMMAND='build' ;;
-		commit) COMMAND='commit' ;;
-		h|hi|his|hist|histo|histor|history) COMMAND='history' ;;
-		i|im|ima|imag|image|images) COMMAND='images' ;;
-		import) COMMAND='import' ;;
-		l|li|lis|list) COMMAND='list' ;;
-		lo|loa|load) COMMAND='load' ;;
-		p|pu|pur|purg|purge) COMMAND='purge' ;;
-		rm|rmi) COMMAND='rmi' ;;
-		s|sa|sav|save) COMMAND='save' ;;
-		t|ta|tag) COMMAND='tag' ;;
-		*) usage command "$1" ;;
-	esac
+    case $1 in
+        b|bu|bui|buil|build) COMMAND='build' ;;
+        commit) COMMAND='commit' ;;
+        h|hi|his|hist|histo|histor|history) COMMAND='history' ;;
+        i|im|ima|imag|image|images) COMMAND='images' ;;
+        import) COMMAND='import' ;;
+        l|li|lis|list) COMMAND='list' ;;
+        lo|loa|load) COMMAND='load' ;;
+        p|pu|pur|purg|purge) COMMAND='purge' ;;
+        rm|rmi) COMMAND='rmi' ;;
+        s|sa|sav|save) COMMAND='save' ;;
+        t|ta|tag) COMMAND='tag' ;;
+        *) usage command "$1" ;;
+    esac
 
-	shift
-	image_$COMMAND "$@"
+    shift
+    image_$COMMAND "$@"
 }
 
 function usage {
-	cat 1>&2 <<EOF
+    cat 1>&2 <<EOF
 Unknown $1: $2
 
 Usage: $SELF [-h | --help]
        $SELF <command> [<args>]
 EOF
-	exit 1
+    exit 1
 }
 
 function help_main {
-	cat <<EOF | pager
+    cat <<EOF | pager
 Usage: $SELF [-h | --help]
        $SELF <command> [<args>]
 
@@ -139,23 +139,23 @@ Commands:
 
 Run '$SELF COMMAND --help' for more information on a command.
 EOF
-	exit 1
+    exit 1
 }
 
 function help_command {
-	local alt cmd=$1 arg=$2
+    local alt cmd=$1 arg=$2
 
-	if [[ $cmd == *@* ]]; then
-		alt=${cmd#*@}	# alternative alias
-		cmd=${cmd%@*}
-	fi
+    if [[ $cmd == *@* ]]; then
+        alt=${cmd#*@}   # alternative alias
+        cmd=${cmd%@*}
+    fi
 
-	if [[ $arg == '-h' || $arg == '--help' ]]; then
-		docker $cmd --help 2>&1 \
-			| sed -e '1d' -e "s/docker\s\+$cmd/$SELF ${alt:-$cmd}/g" \
-			| pager
-		exit 1
-	fi
+    if [[ $arg == '-h' || $arg == '--help' ]]; then
+        docker $cmd --help 2>&1 \
+            | sed -e '1d' -e "s/docker\s\+$cmd/$SELF ${alt:-$cmd}/g" \
+            | pager
+        exit 1
+    fi
 }
 
 ########################################################################
@@ -164,110 +164,110 @@ function help_command {
 
 # build [OPTIONS] PATH | URL | -
 function image_build {
-	help_command build "$@"
-	(( $# > 0 )) || help_command build -h
+    help_command build "$@"
+    (( $# > 0 )) || help_command build -h
 
-	docker build "$@"
+    docker build "$@"
 }
 
 # commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
 function image_commit {
-	help_command commit "$@"
-	(( $# > 0 )) || help_command commit -h
+    help_command commit "$@"
+    (( $# > 0 )) || help_command commit -h
 
-	docker commit "$@"
+    docker commit "$@"
 }
 
 # history [OPTIONS] IMAGE
 function image_history {
-	help_command history "$@"
-	(( $# > 0 )) || help_command history -h
+    help_command history "$@"
+    (( $# > 0 )) || help_command history -h
 
-	docker history "$@" 2>&1 | pager
+    docker history "$@" 2>&1 | pager
 }
 
 # images [OPTIONS] [REPOSITORY]
 function image_images {
-	help_command images "$@"
+    help_command images "$@"
 
 
-	docker images "$@" \
-		| sed -e '1s/VIRTUAL/V./' -e 's/ \+$//' -e 's/  \+/\t/g' \
-		| { local line
-			read -r line
-			echo "$line"
-			sort -
-		  } \
-		| column --table --separator $'\t'
+    docker images "$@" \
+        | sed -e '1s/VIRTUAL/V./' -e 's/ \+$//' -e 's/  \+/\t/g' \
+        | { local line
+            read -r line
+            echo "$line"
+            sort -
+          } \
+        | column --table --separator $'\t'
 }
 
-# import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]
+# import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]
 function image_import {
-	help_command import "$@"
-	(( $# > 0 )) || help_command import -h
+    help_command import "$@"
+    (( $# > 0 )) || help_command import -h
 
-	docker import "$@"
+    docker import "$@"
 }
 
 # list [OPTIONS] [REPOSITORY]
 function image_list {
-	help_command images@list "$@"
+    help_command images@list "$@"
 
-	docker images "$@" | {
-		local headers line
-		read headers
-		local -i p1=$(strindex "$headers" REPOSITORY)
-		local -i p2=$(strindex "$headers" TAG)
-		local -i p3=$(strindex "$headers" IMAGE)
-		local -i p4=$(strindex "$headers" CREATED)
-		local -i p5=$(strindex "$headers" VIRTUAL)
-		sort - | while read -r line; do
-			echo 'REPOSITORY:  ' ${line:$p1:$((p2-p1))}
-			echo 'TAG:         ' ${line:$p2:$((p3-p2))}
-			echo 'IMAGE ID:    ' ${line:$p3:$((p4-p3))}
-			echo 'CREATED:     ' ${line:$p4:$((p5-p4))}
-			echo 'VIRTUAL SIZE:' ${line:$p5}
-			echo
-		done
-	} | pager
+    docker images "$@" | {
+        local headers line
+        read headers
+        local -i p1=$(strindex "$headers" REPOSITORY)
+        local -i p2=$(strindex "$headers" TAG)
+        local -i p3=$(strindex "$headers" IMAGE)
+        local -i p4=$(strindex "$headers" CREATED)
+        local -i p5=$(strindex "$headers" VIRTUAL)
+        sort - | while read -r line; do
+            echo 'REPOSITORY:  ' ${line:$p1:$((p2-p1))}
+            echo 'TAG:         ' ${line:$p2:$((p3-p2))}
+            echo 'IMAGE ID:    ' ${line:$p3:$((p4-p3))}
+            echo 'CREATED:     ' ${line:$p4:$((p5-p4))}
+            echo 'VIRTUAL SIZE:' ${line:$p5}
+            echo
+        done
+    } | pager
 }
 
 # load [OPTIONS]
 function image_load {
-	help_command load "$@"
+    help_command load "$@"
 
-	docker load "$@"
+    docker load "$@"
 }
 
 # purge [OPTIONS]
 function image_purge {
-	local opt all force prune
+    local opt all force prune
 
-	while getopts :afh-: opt; do
-		case $opt in
-			a) all='-a' ;;
-			f) force='-f' ;;
-			h) help_purge ;;	
-			-)	case $OPTARG in
-					all*) all="--$OPTARG" ;;
-					force*) force="--$OPTARG" ;;
-					no-prune*) prune="--$OPTARG" ;;
-					help) help_purge ;;
-					*) help_purge ;;
-				esac
-				;;
-			?) help_purge ;;
-		esac
-	done
+    while getopts :afh-: opt; do
+        case $opt in
+            a) all='-a' ;;
+            f) force='-f' ;;
+            h) help_purge ;;    
+            -)  case $OPTARG in
+                    all*) all="--$OPTARG" ;;
+                    force*) force="--$OPTARG" ;;
+                    no-prune*) prune="--$OPTARG" ;;
+                    help) help_purge ;;
+                    *) help_purge ;;
+                esac
+                ;;
+            ?) help_purge ;;
+        esac
+    done
 
-	#shift $((OPTIND-1)); OPTIND=1
+    #shift $((OPTIND-1)); OPTIND=1
 
-	local IMG=$(docker images $all --no-trunc | grep '<none>' | awk '{print $3}')
-	[[ -n $IMG ]] && docker rmi $force $prune $IMG
+    local IMG=$(docker images $all --no-trunc | grep '<none>' | awk '{print $3}')
+    [[ -n $IMG ]] && docker rmi $force $prune $IMG
 }
 
 function help_purge {
-	cat <<EOF | pager
+    cat <<EOF | pager
 Usage: $SELF purge [OPTIONS]
 
 Remove images tagged '<none>'
@@ -276,31 +276,31 @@ Remove images tagged '<none>'
   -f, --force=false    Force removal of the image
   --no-prune=false     Do not delete untagged parents
 EOF
-	exit 0
+    exit 0
 }
 
 # rm [OPTIONS] IMAGE [IMAGE...]
 function image_rmi {
-	help_command rmi "$@"
-	(( $# > 0 )) || help_command rmi -h
+    help_command rmi "$@"
+    (( $# > 0 )) || help_command rmi -h
 
-	docker rmi "$@"
+    docker rmi "$@"
 }
 
 # save [OPTIONS] IMAGE [IMAGE...]
 function image_save {
-	help_command save "$@"
-	(( $# > 0 )) || help_command save -h
+    help_command save "$@"
+    (( $# > 0 )) || help_command save -h
 
-	docker save "$@"
+    docker save "$@"
 }
 
 # tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]
 function image_tag {
-	help_command tag "$@"
-	(( $# > 0 )) || help_command tag -h
+    help_command tag "$@"
+    (( $# > 0 )) || help_command tag -h
 
-	docker tag "$@"
+    docker tag "$@"
 }
 
 ########################################################################

@@ -97,7 +97,7 @@
     
     Extended usage:
     
-      shed-container -l cp PATH HOSTPATH
+      shed-container --latest cp PATH HOSTPATH
     
 
 ## create
@@ -171,7 +171,7 @@
     
     Extended usage:
     
-      shed-container -l diff
+      shed-container --latest diff
     
 
 ## export
@@ -185,7 +185,7 @@
     
     Extended usage:
     
-      shed-container -l export
+      shed-container --latest export
     
 
 ## links
@@ -226,7 +226,7 @@
     
     Extended usage:
     
-      shed-container -l port [PRIVATE_PORT[/PROTO]]
+      shed-container --latest port [PRIVATE_PORT[/PROTO]]
     
 
 ## ps
@@ -270,11 +270,11 @@
     
     Extended usage:
     
-      shed-container -a    rm [OPTIONS]
-      shed-container -g="" rm [OPTIONS]
-      shed-container -p    rm [OPTIONS] CONTAINER
-      shed-container -lp   rm [OPTIONS]
-      shed-container -l    rm [OPTIONS] [CONTAINER...]
+      shed-container --all rm [OPTIONS]
+      shed-container --group="" rm [OPTIONS]
+      shed-container --propagate rm [OPTIONS] CONTAINER
+      shed-container --latest --propagate rm [OPTIONS]
+      shed-container --latest rm [OPTIONS] [CONTAINER...]
     
 
 ## status
@@ -297,7 +297,7 @@
     
     Extended usage:
     
-      shed-container -l attach [OPTIONS]
+      shed-container --latest attach [OPTIONS]
     
 
 ## enter
@@ -330,11 +330,11 @@
     
     Extended usage:
     
-      shed-container -a    kill [OPTIONS]
-      shed-container -g="" kill [OPTIONS]
-      shed-container -p    kill [OPTIONS] CONTAINER
-      shed-container -lp   kill [OPTIONS]
-      shed-container -l    kill [OPTIONS] [CONTAINER...]
+      shed-container --all kill [OPTIONS]
+      shed-container --group="" kill [OPTIONS]
+      shed-container --propagate kill [OPTIONS] CONTAINER
+      shed-container --latest --propagate kill [OPTIONS]
+      shed-container --latest kill [OPTIONS] [CONTAINER...]
     
 
 ## logs
@@ -351,7 +351,7 @@
     
     Extended usage:
     
-      shed-container -l logs [OPTIONS]
+      shed-container --latest logs [OPTIONS]
     
 
 ## pause
@@ -364,11 +364,11 @@
     
     Extended usage:
     
-      shed-container -a    pause
-      shed-container -g="" pause
-      shed-container -p    pause CONTAINER
-      shed-container -lp   pause
-      shed-container -l    pause [CONTAINER...]
+      shed-container --all pause
+      shed-container --group="" pause
+      shed-container --propagate pause CONTAINER
+      shed-container --latest --propagate pause
+      shed-container --latest pause [CONTAINER...]
     
 
 ## restart
@@ -382,11 +382,11 @@
     
     Extended usage:
     
-      shed-container -a    restart [OPTIONS]
-      shed-container -g="" restart [OPTIONS]
-      shed-container -p    restart [OPTIONS] CONTAINER
-      shed-container -lp   restart [OPTIONS]
-      shed-container -l    restart [OPTIONS] [CONTAINER...]
+      shed-container --all restart [OPTIONS]
+      shed-container --group="" restart [OPTIONS]
+      shed-container --propagate restart [OPTIONS] CONTAINER
+      shed-container --latest --propagate restart [OPTIONS]
+      shed-container --latest restart [OPTIONS] [CONTAINER...]
     
 
 ## run
@@ -464,11 +464,11 @@
     
     Extended usage:
     
-      shed-container -a    ship [OPTIONS]
-      shed-container -g="" ship [OPTIONS]
-      shed-container -p    ship [OPTIONS] CONTAINER
-      shed-container -lp   ship [OPTIONS]
-      shed-container -l    ship [OPTIONS]
+      shed-container --all ship [OPTIONS]
+      shed-container --group="" ship [OPTIONS]
+      shed-container --propagate ship [OPTIONS] CONTAINER
+      shed-container --latest --propagate ship [OPTIONS]
+      shed-container --latest ship [OPTIONS]
     
 
 ## start
@@ -483,11 +483,11 @@
     
     Extended usage:
     
-      shed-container -a    start [OPTIONS]
-      shed-container -g="" start [OPTIONS]
-      shed-container -p    start [OPTIONS] CONTAINER
-      shed-container -lp   start [OPTIONS]
-      shed-container -l    start [OPTIONS] [CONTAINER...]
+      shed-container --all start [OPTIONS]
+      shed-container --group="" start [OPTIONS]
+      shed-container --propagate start [OPTIONS] CONTAINER
+      shed-container --latest --propagate start [OPTIONS]
+      shed-container --latest start [OPTIONS] [CONTAINER...]
     
 
 ## stats
@@ -512,11 +512,11 @@
     
     Extended usage:
     
-      shed-container -a    stop [OPTIONS]
-      shed-container -g="" stop [OPTIONS]
-      shed-container -p    stop [OPTIONS] CONTAINER
-      shed-container -lp   stop [OPTIONS]
-      shed-container -l    stop [OPTIONS] [CONTAINER...]
+      shed-container --all stop [OPTIONS]
+      shed-container --group="" stop [OPTIONS]
+      shed-container --propagate stop [OPTIONS] CONTAINER
+      shed-container --latest --propagate stop [OPTIONS]
+      shed-container --latest stop [OPTIONS] [CONTAINER...]
     
 
 ## top
@@ -529,7 +529,7 @@
     
     Extended usage:
     
-      shed-container -l top [list OPTIONS]
+      shed-container --latest top [list OPTIONS]
     
 
 ## unpause
@@ -542,11 +542,11 @@
     
     Extended usage:
     
-      shed-container -a    unpause
-      shed-container -g="" unpause
-      shed-container -p    unpause CONTAINER
-      shed-container -lp   unpause
-      shed-container -l    unpause [CONTAINER...]
+      shed-container --all unpause
+      shed-container --group="" unpause
+      shed-container --propagate unpause CONTAINER
+      shed-container --latest --propagate unpause
+      shed-container --latest unpause [CONTAINER...]
     
 
 ## wait
@@ -559,10 +559,10 @@
     
     Extended usage:
     
-      shed-container -a    wait
-      shed-container -g="" wait
-      shed-container -p    wait CONTAINER
-      shed-container -lp   wait
-      shed-container -l    wait [CONTAINER...]
+      shed-container --all wait
+      shed-container --group="" wait
+      shed-container --propagate wait CONTAINER
+      shed-container --latest --propagate wait
+      shed-container --latest wait [CONTAINER...]
     
 
