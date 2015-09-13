@@ -1,4 +1,4 @@
-This example show how to create multiple limked containers.
+This example show how to create multiple linked containers.
 Study the images to understand the defined links.
 
 How to test:
