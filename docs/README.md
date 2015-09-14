@@ -10,6 +10,12 @@ Reference for the _Shed_ commands:
 
 * [`reference-container.md`](reference-container.md): the online documentation for all [`shed-container`](../shed-container) commands collected in a Markdown document.
 
+Templates for Shedfiles:
+
+* [`Shedfile`](Shedfile): project Shedfile example.
+
+* [`container.shed`](container.shed): container Shedfile example. Works also as a reference for all available parameters.
+
 Slides:
 
 * [`slides-es.html`](slides-es.html): we intend to build a  complete slide presentation for _Shed_. _Work i progress_&hellip;

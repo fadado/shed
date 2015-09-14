@@ -15,6 +15,70 @@ scripts: `shed-hub`, `shed-image` and `shed-container`.  Docker has a lot of
 commands: the first exercise you must do to learn Docker is to classify these
 commands. In _Shed_ this work has been done in advance for you.
 
+## Shedfiles
+
+For every project managed with _Shed_ you must write two configuration files,
+one for the whole project named `Shedfile` and one for each container named like
+the container and with the _shed_ extension, for example `container.shed`.
+
+These files are _Bash_ files, and all the power of _Bash_ is available. The files
+define parameters, with string, list o dictionary values. 
+
+This is a project Shedfile example:
+
+    # prefixed to image names if defined
+    PROJECT=	# null project
+
+    # images to pull
+    IMAGES=(
+        'busybox:latest'
+    )
+
+    # relative paths to images to build
+    BUILDS=(
+        '.'
+    )
+
+    # containers to create (order is significant)
+    CONTAINERS=(
+        'echo'
+        'receiver'
+    )
+
+    # named groups of containers (optional)
+    GROUPS=( 
+        ['echo']="${CONTAINERS[@]}"
+    )
+
+This is a container Shedfile example:
+
+    # Base image
+    IMAGE='busybox:latest'
+
+    # Set environment variables
+    ENVIRON=(
+        [PATH]='/bin:/usr/bin'
+    )
+
+    # Container host name
+    HOSTNAME=$(basename $BASH_SOURCE .shed)
+
+    # Add link to another container in the form of name:alias
+    LINK=(
+        'echo:echo.domain.com'
+    )
+
+    # Keep STDIN open even if not attached
+    INTERACTIVE='true'
+
+    # Allocate a pseudo-TTY
+    TTY='true'
+
+All the parameters in the container Shedfile are forwarded to the `docker create` command,
+and the names are the same (but adapted to the _Bash_ syntax). The file
+[docs/container.shed](docs/container.shed) contains all available parameters
+with default values if defined.
+
 ## Installation
 
 Simply put the scripts in your `PATH`, or run `make install` in the scripts
