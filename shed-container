@@ -487,7 +487,6 @@ function container_build {
     local       NAME
     local       IMAGE
     local       CIDFILE
-    local       CPUSET
     local       CPU_SHARES
     local       ENTRYPOINT
     local       HOSTNAME
@@ -512,7 +511,7 @@ function container_build {
     local   -a  DNS_SEARCH
     local   -a  ENV_FILE
     local   -a  EXPOSE
-    local   -a  HOST
+    local   -a  ADD_HOST
     local   -a  LINK
     local   -a  LXC_CONF
     local   -a  PUBLISH
@@ -531,7 +530,6 @@ function container_build {
     rm -f $CIDFILE
 
     [[ -n $CIDFILE ]] &&        CIDFILE="--cidfile=$CIDFILE"
-    [[ -n $CPUSET ]] &&         CPUSET="--cpuset=$CPUSET"
     [[ -n $CPU_SHARES ]] &&     CPU_SHARES="--cpu-shares=$CPU_SHARES"
     [[ -n $ENTRYPOINT ]] &&     ENTRYPOINT="--entrypoint=$ENTRYPOINT"
     [[ -n $HOSTNAME ]] &&       HOSTNAME="--hostname=$HOSTNAME"
@@ -557,7 +555,7 @@ function container_build {
     for i in ${!DNS_SEARCH[@]}; do  DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
     for i in ${!ENV_FILE[@]}; do    ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
     for i in ${!EXPOSE[@]}; do      EXPOSE[i]="--expose=${EXPOSE[i]}"; done
-    for i in ${!HOST[@]}; do        HOST[i]="--add-host=${HOST[i]}"; done
+    for i in ${!ADD_HOST[@]}; do    ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
     for i in ${!LINK[@]}; do        LINK[i]="--link=${LINK[i]}"; done
     for i in ${!LXC_CONF[@]}; do    LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
     for i in ${!PUBLISH[@]}; do     PUBLISH[i]="--publish=${PUBLISH[i]}"; done
@@ -573,7 +571,6 @@ function container_build {
 
     docker create \
         $CIDFILE \
-        $CPUSET \
         $CPU_SHARES \
         $ENTRYPOINT \
         $HOSTNAME \
@@ -598,7 +595,7 @@ function container_build {
         ${ENVIRON[@]} \
         ${ENV_FILE[@]} \
         ${EXPOSE[@]} \
-        ${HOST[@]} \
+        ${ADD_HOST[@]} \
         ${LINK[@]} \
         ${LXC_CONF[@]} \
         ${PUBLISH[@]} \
