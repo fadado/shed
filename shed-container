@@ -492,6 +492,7 @@ function container_build {
     local       HOSTNAME
     local       INTERACTIVE
     local       IPC
+    local       LOG_DRIVER
     local       MAC_ADDRESS
     local       MEMORY
     local       NET
@@ -513,6 +514,7 @@ function container_build {
     local   -a  EXPOSE
     local   -a  ADD_HOST
     local   -a  LINK
+    local   -a  LOG_OPT
     local   -a  LXC_CONF
     local   -a  PUBLISH
     local   -a  SECURITY_OPT
@@ -535,6 +537,7 @@ function container_build {
     [[ -n $HOSTNAME ]] &&       HOSTNAME="--hostname=$HOSTNAME"
     [[ -n $INTERACTIVE ]] &&    INTERACTIVE="--interactive=$INTERACTIVE"
     [[ -n $IPC ]] &&            IPC="--ipc=$IPC"
+    [[ -n $LOG_DRIVER ]] &&     LOG_DRIVER="--log-driver=$LOG_DRIVER"
     [[ -n $MAC_ADDRESS ]] &&    MAC_ADDRESS="--mac-address=$MAC_ADDRESS"
     [[ -n $MEMORY ]] &&         MEMORY="--memory=$MEMORY"
     [[ -n $NET ]] &&            NET="--net=$NET"
@@ -557,6 +560,7 @@ function container_build {
     for i in ${!EXPOSE[@]}; do      EXPOSE[i]="--expose=${EXPOSE[i]}"; done
     for i in ${!ADD_HOST[@]}; do    ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
     for i in ${!LINK[@]}; do        LINK[i]="--link=${LINK[i]}"; done
+    for i in ${!LOG_OPT[@]}; do     LOG_OPT[i]="--log-opt=${LOG_OPT[i]}"; done
     for i in ${!LXC_CONF[@]}; do    LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
     for i in ${!PUBLISH[@]}; do     PUBLISH[i]="--publish=${PUBLISH[i]}"; done
     for i in ${!SECURITY_OPT[@]}; do SECURITY_OPT[i]="--security-opt=${SECURITY_OPT[i]}"; done
@@ -576,6 +580,7 @@ function container_build {
         $HOSTNAME \
         $INTERACTIVE \
         $IPC \
+        $LOG_DRIVER \
         $MAC_ADDRESS \
         $MEMORY \
         $NAME \
@@ -597,6 +602,7 @@ function container_build {
         ${EXPOSE[@]} \
         ${ADD_HOST[@]} \
         ${LINK[@]} \
+        ${LOG_OPT[@]} \
         ${LXC_CONF[@]} \
         ${PUBLISH[@]} \
         ${SECURITY_OPT[@]} \
