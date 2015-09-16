@@ -1,4 +1,4 @@
-This example show how to run a Bash script inside the container with PID 1 and
+This example show how to run a _Bash_ script inside the container with PID 1 and
 a supervised worker service as a background job.
 
 How to test:

@@ -2,11 +2,13 @@
 
 Example tests grouped in this directory:
 
-* **ECHO**: this example implements the ECHO protocol server using two linked containers.
+* **hello**: implements the classical "Hello, world!" test.
 
-* **propagate**: this example show how to create multiple linked containers.
+* **ECHO**: implements the ECHO protocol server using two linked containers.
 
-* **supervised**: this example show how to run a Bash script inside the container with PID 1 and
+* **propagate**: shows how to create multiple linked containers.
+
+* **supervised**: shows how to run a _Bash_ script inside the container with PID 1 and
 a supervised worker service as a background job.
 
 <!--
