@@ -484,10 +484,18 @@ function container_build {
 
     unset HOSTNAME USER # to be redefined
 
-    local       NAME
     local       IMAGE
+    local   -a  CMD
+
+    local       BLKIO_WEIGHT
+    local       CGROUP_PARENT
     local       CIDFILE
+    local       CPU_PERIOD
+    local       CPU_QUOTA
+    local       CPUSET_CPUS
+    local       CPUSET_MEMS
     local       CPU_SHARES
+    local       DISABLE_CONTENT_TRUST
     local       ENTRYPOINT
     local       HOSTNAME
     local       INTERACTIVE
@@ -495,29 +503,40 @@ function container_build {
     local       LOG_DRIVER
     local       MAC_ADDRESS
     local       MEMORY
+    local       MEMORY_SWAP
+    local       MEMORY_SWAPPINESS
+    local       NAME
     local       NET
+    local       OOM_KILL_DISABLE
+    local       PID
     local       PRIVILEGED
     local       PUBLISH_ALL
+    local       READ_ONLY
     local       RESTART
     local       TTY
     local       USER
+    local       UTS
+    local       VOLUME_DRIVER
     local       WORKDIR
-    local   -A  ENVIRON     # ENV is reserved in the Posix shell
+    local   -a  ADD_HOST
     local   -a  ATTACH
-    local   -a  CMD
     local   -a  CAP_ADD
     local   -a  CAP_DROP
     local   -a  DEVICE
     local   -a  DNS
     local   -a  DNS_SEARCH
     local   -a  ENV_FILE
+    local   -A  ENVIRON     # ENV is reserved in the Posix shell
     local   -a  EXPOSE
-    local   -a  ADD_HOST
+    local   -a  GROUP_ADD
+    local   -a  LABEL
+    local   -a  LABEL_FILE
     local   -a  LINK
     local   -a  LOG_OPT
     local   -a  LXC_CONF
     local   -a  PUBLISH
     local   -a  SECURITY_OPT
+    local   -a  ULIMIT
     local   -a  VOLUME
     local   -a  VOLUMES_FROM
 
@@ -531,8 +550,15 @@ function container_build {
     fi
     rm -f $CIDFILE
 
+    [[ -n $BLKIO_WEIGHT ]] &&   BLKIO_WEIGHT="--blkio-weight=$BLKIO_WEIGHT"
+    [[ -n $CGROUP_PARENT ]] &&  CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
     [[ -n $CIDFILE ]] &&        CIDFILE="--cidfile=$CIDFILE"
+    [[ -n $CPU_PERIOD ]] &&     CPU_PERIOD="--cpu-period=$CPU_PERIOD"
+    [[ -n $CPU_QUOTA ]] &&      CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
+    [[ -n $CPUSET_CPUS ]] &&    CPUSET_CPUS="--cpu-cpus=$CPUSET_CPUS"
+    [[ -n $CPUSET_MEMS ]] &&    CPUSET_MEMS="--cpu-mems=$CPUSET_MEMS"
     [[ -n $CPU_SHARES ]] &&     CPU_SHARES="--cpu-shares=$CPU_SHARES"
+    [[ -n $DISABLE_CONTENT_TRUST ]] && DISABLE_CONTENT_TRUST ="--disable-content-trust=$DISABLE_CONTENT_TRUST"
     [[ -n $ENTRYPOINT ]] &&     ENTRYPOINT="--entrypoint=$ENTRYPOINT"
     [[ -n $HOSTNAME ]] &&       HOSTNAME="--hostname=$HOSTNAME"
     [[ -n $INTERACTIVE ]] &&    INTERACTIVE="--interactive=$INTERACTIVE"
@@ -540,16 +566,23 @@ function container_build {
     [[ -n $LOG_DRIVER ]] &&     LOG_DRIVER="--log-driver=$LOG_DRIVER"
     [[ -n $MAC_ADDRESS ]] &&    MAC_ADDRESS="--mac-address=$MAC_ADDRESS"
     [[ -n $MEMORY ]] &&         MEMORY="--memory=$MEMORY"
+    [[ -n $MEMORY_SWAP ]] &&    MEMORY_SWAP="--memory-swap=$MEMORY_SWAP"
+    [[ -n $MEMORY_SWAPPINESS ]] && MEMORY_SWAPPINESS="--memory-swappiness=$MEMORY_SWAPPINESS"
     [[ -n $NET ]] &&            NET="--net=$NET"
+    [[ -n $OOM_KILL_DISABLE ]] && OOM_KILL_DISABLE="--oom-kill-disable=$OOM_KILL_DISABLE"
+    [[ -n $PID ]] &&            PID="--pid=$PID"
     [[ -n $PRIVILEGED ]] &&     PRIVILEGED="--privileged=$PRIVILEGED"
     [[ -n $PUBLISH_ALL ]] &&    PUBLISH_ALL="--publish-all=$PUBLISH_ALL"
+    [[ -n $READ_ONLY ]] &&      READ_ONLY="--read-only=$READ_ONLY"
     [[ -n $RESTART ]] &&        RESTART="--restart=$RESTART"
     [[ -n $TTY ]] &&            TTY="--tty=$TTY"
     [[ -n $USER ]] &&           USER="--user=$USER"
+    [[ -n $UTS ]] &&            UTS="--uts=$UTS"
+    [[ -n $VOLUME_DRIVER ]] &&  VOLUME_DRIVER="--volume-driver=$VOLUME_DRIVER"
     [[ -n $WORKDIR ]] &&        WORKDIR="--workdir=$WORKDIR"
 
     local k; local -i i
-    for k in ${!ENVIRON[@]}; do     ENVIRON[$k]="--env $k=${ENVIRON[$k]}"; done
+    for i in ${!ADD_HOST[@]}; do    ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
     for i in ${!ATTACH[@]}; do      DEVICE[i]="--attach=${ATTACH[i]}"; done
     for i in ${!CAP_ADD[@]}; do     CAP_ADD[i]="--cap-add=${CAP_ADD[i]}"; done
     for i in ${!CAP_DROP[@]}; do    CAP_DROP[i]="--cap-drop=${CAP_DROP[i]}"; done
@@ -558,14 +591,18 @@ function container_build {
     for i in ${!DNS_SEARCH[@]}; do  DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
     for i in ${!ENV_FILE[@]}; do    ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
     for i in ${!EXPOSE[@]}; do      EXPOSE[i]="--expose=${EXPOSE[i]}"; done
-    for i in ${!ADD_HOST[@]}; do    ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
+    for i in ${!GROUP_ADD[@]}; do   GROUP_ADD[i]="--group-add=${GROUP_ADD[i]}"; done
+    for i in ${!LABEL[@]}; do       LABEL[i]="--label=${LABEL[i]}"; done
+    for i in ${!LABEL_FILE[@]}; do  LABEL_FILE[i]="--label-file=${LABEL_FILE[i]}"; done
     for i in ${!LINK[@]}; do        LINK[i]="--link=${LINK[i]}"; done
     for i in ${!LOG_OPT[@]}; do     LOG_OPT[i]="--log-opt=${LOG_OPT[i]}"; done
     for i in ${!LXC_CONF[@]}; do    LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
     for i in ${!PUBLISH[@]}; do     PUBLISH[i]="--publish=${PUBLISH[i]}"; done
     for i in ${!SECURITY_OPT[@]}; do SECURITY_OPT[i]="--security-opt=${SECURITY_OPT[i]}"; done
-    for i in ${!VOLUMES_FROM[@]}; do VOLUMES_FROM[i]="--volumes-from=${VOLUMES_FROM[i]}"; done
+    for i in ${!ULIMIT[@]}; do      ULIMIT[i]="--ulimit=${ULIMIT[i]}"; done
     for i in ${!VOLUME[@]}; do      VOLUME[i]="--volume=${VOLUME[i]}"; done
+    for i in ${!VOLUMES_FROM[@]}; do VOLUMES_FROM[i]="--volumes-from=${VOLUMES_FROM[i]}"; done
+    for k in ${!ENVIRON[@]}; do     ENVIRON[$k]="--env $k=${ENVIRON[$k]}"; done
 
     if (( remove )); then
         [[ -n $name ]] || fatal 'must provide a name'
@@ -574,8 +611,15 @@ function container_build {
     fi
 
     docker create \
+        $BLKIO_WEIGHT \
+        $CGROUP_PARENT \
         $CIDFILE \
+        $CPU_PERIOD \
+        $CPU_QUOTA \
+        $CPUSET_CPUS \
+        $CPUSET_MEMS \
         $CPU_SHARES \
+        $DISABLE_CONTENT_TRUST \
         $ENTRYPOINT \
         $HOSTNAME \
         $INTERACTIVE \
@@ -583,31 +627,42 @@ function container_build {
         $LOG_DRIVER \
         $MAC_ADDRESS \
         $MEMORY \
+        $MEMORY_SWAP \
+        $MEMORY_SWAPPINESS \
         $NAME \
         $NET \
+        $OOM_KILL_DISABLE \
+        $PID \
         $PRIVILEGED \
         $PUBLISH_ALL \
+        $READ_ONLY \
         $RESTART \
         $TTY \
         $USER \
+        $UTS \
+        $VOLUME_DRIVER \
         $WORKDIR \
+        ${ADD_HOST[@]} \
         ${ATTACH[@]} \
         ${CAP_ADD[@]} \
         ${CAP_DROP[@]} \
         ${DEVICE[@]} \
         ${DNS[@]} \
         ${DNS_SEARCH[@]} \
-        ${ENVIRON[@]} \
         ${ENV_FILE[@]} \
+        ${ENVIRON[@]} \
         ${EXPOSE[@]} \
-        ${ADD_HOST[@]} \
+        ${GROUP_ADD[@]} \
+        ${LABEL[@]} \
+        ${LABEL_FILE[@]} \
         ${LINK[@]} \
         ${LOG_OPT[@]} \
         ${LXC_CONF[@]} \
         ${PUBLISH[@]} \
         ${SECURITY_OPT[@]} \
-        ${VOLUMES_FROM[@]} \
+        ${ULIMIT[@]} \
         ${VOLUME[@]} \
+        ${VOLUMES_FROM[@]} \
         $IMAGE \
         "${CMD[@]}"
 }
