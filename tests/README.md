@@ -4,6 +4,8 @@ Example tests grouped in this directory:
 
 * **hello**: implements the classical "Hello, world!" test.
 
+* **create**: implements the classical "Hello, world!" test with all parameters defined in the `hello.shed` file.
+
 * **ECHO**: implements the ECHO protocol server using two linked containers.
 
 * **propagate**: shows how to create multiple linked containers.

@@ -5,7 +5,7 @@
 # Base image
 IMAGE="busybox:latest"
 
-CMD=('/bin/echo' 'Hello, ' 'world!')
+CMD=('/bin/echo' 'Hello,' 'world!')
 
 # Allocate a pseudo-TTY
 TTY='true'

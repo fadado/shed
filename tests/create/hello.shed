@@ -5,11 +5,11 @@
 ########################################################################
 
 # Base image
-IMAGE=''
+IMAGE="busybox:latest"
 
 # Command to run (a list of words or a string without spaces)
-#CMD=( 'cmd' 'arg' 'arg' )
-CMD=''
+CMD=('/bin/echo' 'Hello,' 'world!')
+#CMD=''
 
 ########################################################################
 # Options do `docker create`
@@ -195,7 +195,7 @@ SECURITY_OPT=()
 
 # -t, --tty=false
 # Allocate a pseudo-TTY
-TTY='false'
+TTY='true'
 
 # --ulimit=[]
 # Ulimit options
