@@ -7,4 +7,3 @@ This example implements the classic hello world example.
 2. Run container:
 
         shed-container start --attach hello
-        Hello,  world!

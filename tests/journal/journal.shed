@@ -1,0 +1,18 @@
+########################################################################
+# Container Shedfile for journald log driver example
+########################################################################
+
+# Base image
+IMAGE="busybox:latest"
+
+# Command to run
+CMD=(
+	'/bin/sh'
+	'-c'
+	'while true; do echo "Hi, how are you?"; sleep 3; done'
+)
+
+# Logging driver for container
+LOG_DRIVER='journald'
+
+# vim:syntax=sh:ai:sw=8:ts=8
