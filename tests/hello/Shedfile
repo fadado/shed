@@ -2,19 +2,10 @@
 # Sample project Shedfile
 ########################################################################
 
-# prefixed to image names if defined
-PROJECT=	# null project
-
 # images to pull
 IMAGES=( 'busybox:latest' )
 
-# relative paths to images to build
-BUILDS=()
-
 # containers to create (order is significant)
 CONTAINERS=( 'hello' )
-
-# named groups of containers
-GROUPS=()
 
 # vim:syntax=sh:ai:sw=4:ts=4

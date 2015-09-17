@@ -2,9 +2,6 @@
 # Sample project Shedfile
 ########################################################################
 
-# prefixed to image names if defined
-PROJECT=	# null project
-
 # images to pull
 IMAGES=(
 	'busybox:latest'

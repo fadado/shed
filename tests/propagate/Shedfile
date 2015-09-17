@@ -6,8 +6,6 @@ PROJECT='p'
 
 IMAGES=('busybox:latest')
 
-BUILDS=()
-
 CONTAINERS=(a c e d b h i g f)	# post-order
 
 GROUPS=([$PROJECT]="${CONTAINERS[@]}")
