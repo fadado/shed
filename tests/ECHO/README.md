@@ -1,3 +1,5 @@
+# ECHO
+
 This example implements the ECHO protocol server using two linked containers:
 **echo** and **receiver**.
 
@@ -5,7 +7,7 @@ How to test:
 
 1. Create containers and attach to **receiver** container:
 
-        shed-hub build
+        shed-hub build      # 'shed-hub build --remove' to start again
         shed-container --propagate start receiver
         shed-container attach receiver
 

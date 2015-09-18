@@ -1,0 +1,17 @@
+########################################################################
+# Container Shedfile for Postgres database
+########################################################################
+
+IMAGE="shed/postgres_database:latest"
+
+ENVIRON=( 
+	[TERM]='screen-256color'	# 'xtem-256color'
+)
+
+HOSTNAME=$(basename $BASH_SOURCE .shed)
+
+PUBLISH=(
+	'127.0.0.1:5432:5432'
+)
+
+# vim:syntax=sh:ai:sw=4:ts=4:et

@@ -15,4 +15,10 @@ CMD=(
 # Logging driver for container
 LOG_DRIVER='journald'
 
+#if [[ $HOSTNAME == MyWorkstation ]]; then
+#	LOG_DRIVER='json-file'
+#else	# production
+#	LOG_DRIVER='journald'
+#fi
+
 # vim:syntax=sh:ai:sw=8:ts=8

@@ -1,0 +1,23 @@
+########################################################################
+# Container Shedfile for training database
+########################################################################
+
+IMAGE="shed/postgres_database:latest"
+
+ENVIRON=( 
+	[TERM]='screen-256color'	# 'xtem-256color'
+)
+
+HOSTNAME=$(basename $BASH_SOURCE .shed)
+
+PUBLISH=(
+	'127.0.0.3:5432:5432'
+)
+
+VOLUME=(
+	"$PWD/training/training.sql.gz:/var/lib/pgsql/database.sql.gz"
+)
+# add to VOLUME and uncomment for production sites
+# '/var/lib/pgsql/data:/var/lib/pgsql/data'
+
+# vim:syntax=sh:ai:sw=4:ts=4:et

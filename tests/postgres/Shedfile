@@ -1,0 +1,29 @@
+########################################################################
+# Postgres database Shedfile
+########################################################################
+
+# prefixed to image names if defined
+PROJECT=${PWD##*/}
+
+# images to pull
+IMAGES=(
+	'centos:7'
+)
+
+# relative paths to images to build
+BUILDS=(
+	'base'
+	'common'
+	'server'
+	'database'
+	'training'
+)
+
+# containers to create
+CONTAINERS=(
+	'database'
+	'training-build'
+	'training-start'
+)
+
+# vim:syntax=sh:ai:sw=4:ts=4:et
