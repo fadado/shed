@@ -2,7 +2,7 @@
 # Postgres database Shedfile
 ########################################################################
 
-# prefixed to image names if defined
+# prefixed to image names
 PROJECT=${PWD##*/}
 
 # images to pull

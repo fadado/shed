@@ -2,12 +2,18 @@
 # Shedfile for 'propagate' test
 ########################################################################
 
+# prefixed to container and image names
 PROJECT='p'
 
-IMAGES=('busybox:latest')
+# images to pull
+IMAGES=( 'busybox:latest' )
 
-CONTAINERS=(a c e d b h i g f)	# post-order
+# containers to create
+CONTAINERS=( a c e d b h i g f )	# post-order
 
-GROUPS=([$PROJECT]="${CONTAINERS[@]}")
+# named groups of containers
+GROUPS=(
+	[$PROJECT]="${CONTAINERS[@]}"
+)
 
 # vim:syntax=sh:ai:sw=4:ts=4
