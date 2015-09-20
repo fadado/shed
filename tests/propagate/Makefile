@@ -3,18 +3,18 @@
 ########################################################################
 
 .SILENT:
-.PHONY: all build clean clobber
+.PHONY: all build builder clean
 
-all: build
+all: builder
 
 build.log: .
 	shed-hub build --remove |& tee build.log
  
-build: build.log
+builder: build.log
  
 clean:
 	rm -f build.log
  
-clobber: clean build
+build: clean builder
  
 #
