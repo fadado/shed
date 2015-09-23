@@ -215,7 +215,7 @@ function hub_build {
             docker stop $name &>/dev/null
             docker rm $name &>/dev/null
         fi
-        shed-container build --name=$name ${container}.shed
+        $(dirname $0)/shed-container build --name=$name ${container}.shed
     done
 }
 
