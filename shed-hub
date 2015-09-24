@@ -252,7 +252,7 @@ function hub_inspect {
     help_command inspect "$@"
     (( $# > 0 )) || help_command inspect -h
 
-    docker inspect "$@" | python -m 'json.tool' | pager
+    docker inspect "$@" | python -m 'json.tool'
 }
 
 # query [OPTIONS] CONTAINER | IMAGE

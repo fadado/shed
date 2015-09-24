@@ -344,8 +344,6 @@ EOF
 declare -r -A EXTENSIONS=(
     ['attach']="
   $SELF --latest attach [OPTIONS]"
-    ['cp']="
-  $SELF --latest cp PATH HOSTPATH"
     ['diff']="
   $SELF --latest diff"
     ['export']="
@@ -681,14 +679,11 @@ EOF
 
 # cp [OPTIONS] CONTAINER:PATH LOCALPATH | -
 #    [OPTIONS] LOCALPATH | - CONTAINER:PATH
-# -l cp PATH HOSTPATH
 function container_cp {
     help_command cp "$@"
     (( $# == 2 )) || help_command cp -h
 
-    local cp=$1 hp=$2
-    [[ -n $LATEST ]] && cp="${LATEST}:$cp"
-    docker cp "$cp" "$hp"
+    docker cp "$1" "$1"
 }
 
 # create [OPTIONS] IMAGE [COMMAND] [ARG...]
@@ -821,6 +816,8 @@ EOF
 }
 
 # list [OPTIONS]
+# Warning: options --quiet and --format are not supported
+# Warning: option --size is ignored
 function container_list {
     help_command ps@list "$@"
 
@@ -871,28 +868,7 @@ function container_port {
 function container_ps {
     help_command ps "$@"
 
-    docker ps "$@" \
-        | { local headers line
-            read headers
-            local -i p1=$(strindex "$headers" CONTAINER)
-            local -i p2=$(strindex "$headers" IMAGE)
-            local -i p3=$(strindex "$headers" COMMAND)
-            local -i p4=$(strindex "$headers" CREATED)
-            local -i p5=$(strindex "$headers" STATUS)
-            local -i p6=$(strindex "$headers" PORTS)
-            local -i p7=$(strindex "$headers" NAMES)
-            echo CONTAINER ID$'\t'IMAGE$'\t'COMMAND$'\t'CREATED$'\t'STATUS$'\t'PORTS$'\t'NAMES
-            sort --key 1.$p7 - | while read -r line; do
-                echo -n ${line:$p1:$((p2-p1))}$'\t'
-                echo -n ${line:$p2:$((p3-p2))}$'\t'
-                echo -n ${line:$p3:$((p4-p3))}$'\t'
-                echo -n ${line:$p4:$((p5-p4))}$'\t'
-                echo -n ${line:$p5:$((p6-p5))}$'\t'
-                echo -n ${line:$p6:$((p7-p6))}$'\t'
-                echo ${line:$p7}
-            done
-        } \
-        | column --table --separator $'\t'
+    docker ps "$@"
 }
 
 # rename [OPTIONS] OLD_NAME NEW_NAME
@@ -929,8 +905,7 @@ function container_top {
 
     docker top $LATEST "$@" 2>&1 \
         | sed -e 's/ \+$//' -e 's/  \+/\t/g' \
-        | column --table --separator $'\t' \
-        | pager
+        | column --table --separator $'\t'
 }
 
 ########################################################################

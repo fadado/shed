@@ -190,7 +190,6 @@ function image_history {
 function image_images {
     help_command images "$@"
 
-
     docker images "$@" \
         | sed -e '1s/VIRTUAL/V./' -e 's/ \+$//' -e 's/  \+/\t/g' \
         | { local line
@@ -210,6 +209,8 @@ function image_import {
 }
 
 # list [OPTIONS] [REPOSITORY]
+# Warning: option --quiet is are not supported
+# Warning: option --digest is ignored
 function image_list {
     help_command images@list "$@"
 
