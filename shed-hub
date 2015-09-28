@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9'    # Shed version
+declare -r VERSION='0.9.1'    # Shed version
 declare -r SELF=${0##*/}
 
 if [[ -e ./Shedfile ]]; then
@@ -13,7 +13,11 @@ if [[ -e ./Shedfile ]]; then
     source ./Shedfile
 fi
 
-declare -r IMAGE_USER='shed'
+declare IMAGE_USER='shed'
+
+# can override IMAGE_USER
+[[ -e /usr/local/etc/shed.conf ]] && . /usr/local/etc/shed.conf 
+[[ -e .shed ]] && . .shed
 
 export LESS=\
 '--chop-long-lines '\
@@ -59,8 +63,9 @@ function main {
 
     local opt COMMAND
 
-    while getopts :h-: opt; do
+    while getopts :Vh-: opt; do
         case $opt in
+            V) version ;;
             h) help_main ;; 
             -)  case $OPTARG in
                     help) help_main ;;
@@ -92,11 +97,16 @@ function main {
     hub_$COMMAND "$@"
 }
 
+function version {
+    echo "$SELF $VERSION"
+    exit 0
+}
+
 function usage {
     cat 1>&2 <<EOF
 Unknown $1: $2
 
-Usage: $SELF [-h | --help]
+Usage: $SELF [-h | --help | -V]
        $SELF <command> [<args>]
 EOF
     exit 1
@@ -104,11 +114,12 @@ EOF
 
 function help_main  {
     cat <<EOF | pager
-Usage: $SELF [-h | --help]
+Usage: $SELF [-h | --help | -V]
        $SELF <command> [<args>]
 
 Options:
     -h, --help  Help information
+    -V          Shows version information
 
 Commands:
     build [OPTIONS]

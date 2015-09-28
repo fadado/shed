@@ -3,7 +3,7 @@
 ########################################################################
 
 .SILENT:
-.PHONY: all install uninstall
+.PHONY: all install uninstall test
 
 INSTALL = install --verbose --compare --mode 555
 
@@ -16,3 +16,8 @@ install:
 uninstall:
 	( cd ~/bin && rm -f $(TOOLS) )
 	( cd /usr/local/bin && sudo rm -f $(TOOLS) )
+
+test:
+	bash -n shed-hub
+	bash -n shed-image
+	bash -n shed-container
