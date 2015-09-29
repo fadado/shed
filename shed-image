@@ -7,15 +7,6 @@
 declare -r VERSION='0.9.1'    # Shed version
 declare -r SELF=${0##*/}
 
-#?if [[ -e ./Shedfile ]]; then
-#?  declare -a PROJECT BUILDS IMAGES CONTAINERS
-#?  unset GROUPS; declare -A GROUPS
-#?  source ./Shedfile
-#?fi
-
-#?[[ -e /usr/local/etc/shed.conf ]] && . /usr/local/etc/shed.conf 
-#?[[ -e .shed ]] && . .shed
-
 export LESS=\
 '--chop-long-lines '\
 '--clear-screen '\
@@ -121,7 +112,7 @@ Usage: $SELF [-h | --help | -V]
 
 Options:
     -h, --help  Help information
-    -V          Shows version information
+    -V          Show version information
 
 Commands:
     build [OPTIONS] PATH | URL | -

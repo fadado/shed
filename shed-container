@@ -7,16 +7,6 @@
 declare -r VERSION='0.9.1'    # Shed version
 declare -r SELF=${0##*/}
 
-if [[ -e ./Shedfile ]]; then
-    declare -a PROJECT BUILDS IMAGES CONTAINERS
-    unset GROUPS; declare -A GROUPS
-    source ./Shedfile
-fi
-
-# can define global GROUPS
-[[ -e /usr/local/etc/shed.conf ]] && . /usr/local/etc/shed.conf 
-[[ -e .shed ]] && . .shed
-
 export LESS=\
 '--chop-long-lines '\
 '--clear-screen '\
@@ -65,6 +55,17 @@ function strindex { # position of $2 in $1
     local x=${1%%$2*}
     [[ $x == $1 ]] && echo -1 || echo ${#x}
 }
+
+########################################################################
+# Load Shedfile and configuration files
+########################################################################
+
+if [[ -e ./Shedfile ]]; then
+    bash -n ./Shedfile || fatal "Syntax error loading ./Shedfile"
+    declare -a PROJECT BUILDS IMAGES CONTAINERS
+    unset GROUPS; declare -A GROUPS
+    source ./Shedfile
+fi
 
 ########################################################################
 # Status filters
@@ -286,7 +287,7 @@ Options:
     -h, --help      Help information
     -l, --latest    Apply command to the latest created container
     -p, --propagate Propagate command to linked containers
-    -V              Shows version information
+    -V              Show version information
 
 General commands:
     build [OPTIONS] FILE
@@ -549,6 +550,7 @@ function container_build {
     local   -a  VOLUME
     local   -a  VOLUMES_FROM
 
+    bash -n $shedfile || fatal "Syntax error loading $shedfile"
     source $shedfile    # source definitions
 
     [[ -n $IMAGE ]] || fatal 'IMAGE must be defined'

@@ -10,7 +10,7 @@ IMAGES=(
 	'centos:7'
 )
 
-# relative paths to images to build
+# directory names for images to build
 BUILDS=(
 	'base'
 	'common'

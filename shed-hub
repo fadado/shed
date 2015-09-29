@@ -7,17 +7,12 @@
 declare -r VERSION='0.9.1'    # Shed version
 declare -r SELF=${0##*/}
 
-if [[ -e ./Shedfile ]]; then
-    declare -a PROJECT BUILDS IMAGES CONTAINERS
-    unset GROUPS; declare -A GROUPS
-    source ./Shedfile
-fi
+declare -ar CONFIG=( '/usr/local/etc/shed.conf' "$HOME/.shed" '.shed' )
 
-declare IMAGE_USER='shed'
-
-# can override IMAGE_USER
-[[ -e /usr/local/etc/shed.conf ]] && . /usr/local/etc/shed.conf 
-[[ -e .shed ]] && . .shed
+# Prefix to all image names
+#   [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+#   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+declare TAGS_PREFIX='shed'
 
 export LESS=\
 '--chop-long-lines '\
@@ -53,6 +48,24 @@ function pager {        # colorized less
     [[ -z $PAGER ]] && PAGER=$(type -p less)
     sed -e s/^/$color/ | $PAGER
 }
+
+########################################################################
+# Load Shedfile and configuration files
+########################################################################
+
+if [[ -e ./Shedfile ]]; then
+    bash -n ./Shedfile || fatal "Syntax error loading ./Shedfile"
+    declare -a PROJECT BUILDS IMAGES CONTAINERS
+    unset GROUPS; declare -A GROUPS
+    source ./Shedfile
+fi
+
+# can override TAGS_PREFIX
+for f in ${CONFIG[@]}; do
+    [[ -e $f ]] || continue
+    bash -n $f || fatal "Syntax error loading $f"
+    source $f
+done
 
 ########################################################################
 # Main and help
@@ -119,7 +132,7 @@ Usage: $SELF [-h | --help | -V]
 
 Options:
     -h, --help  Help information
-    -V          Shows version information
+    -V          Show version information
 
 Commands:
     build [OPTIONS]
@@ -198,7 +211,7 @@ function hub_build {
     [[ -e ./Shedfile ]] || fatal 'No Shedfile found for project in .'
 
     # pull images
-    local image
+    local prefix=$TAGS_PREFIX image tag='latest'
     for image in ${IMAGES[@]}
     do
         docker pull $image
@@ -207,11 +220,40 @@ function hub_build {
     # build images
     for image in ${BUILDS[@]}
     do
+        local ifs=$IFS
+        if [[ $image == */* ]]; then    # has tag with /
+            # [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+            IFS='/'
+            set -- $image   # split on '/'
+            IFS=$ifs    # restore
+            if (( $# == 3 )); then
+                prefix="$1/$2"
+                image=$3
+            elif (( $# == 2 )); then
+                prefix=$1
+                image=$2
+            else
+                fatal 'Too many / in image tag'
+            fi
+        fi
+        if [[ $image == *:* ]]; then    # has tag with :
+            # NAME[:TAG]
+            IFS=':'
+            set -- $image   # split on ':'
+            IFS=$ifs    # restore
+            (( $# == 2 )) || fatal 'Too many : in image tag'
+            image=$1
+            tag=$2
+        fi
         [[ -d $image ]] || fatal "Directory $image does not exists"
         cd $image
         local -l name=${PWD##*/}
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
-        docker build $quiet $nocache --tag ${IMAGE_USER}/${name} .  # use Dockerfile
+        docker build $quiet $nocache --tag ${prefix}/${name}:${tag} .  # use Dockerfile
+        if [[ $tag != 'latest' ]]; then
+            docker rmi ${prefix}/${name}:latest >/dev/null 2>&1
+            docker tag ${prefix}/${name}:${tag} ${prefix}/${name}:latest
+        fi
         cd $OLDPWD
     done
 

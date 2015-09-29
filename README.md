@@ -34,7 +34,7 @@ This is a project Shedfile example:
         'busybox:latest'
     )
 
-    # relative paths to images to build
+    # directory names for images to build
     BUILDS=(
         '.'
     )

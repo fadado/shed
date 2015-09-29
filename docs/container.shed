@@ -159,7 +159,7 @@ MEMORY_SWAPPINESS=-1
 
 # --net=default
 # Set the Network mode for the container
-NET='default'
+NET='bridge'
 
 # --oom-kill-disable=false
 # Disable OOM Killer
