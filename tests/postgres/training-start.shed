@@ -8,8 +8,6 @@ ENVIRON=(
 	[TERM]='screen-256color'	# 'xtem-256color'
 )
 
-HOSTNAME=$(basename $BASH_SOURCE .shed)
-
 PUBLISH=(
 	'127.0.0.3:5432:5432'
 )
@@ -19,5 +17,7 @@ VOLUME=(
 )
 # add to VOLUME and uncomment for production sites
 # '/var/lib/pgsql/data:/var/lib/pgsql/data'
+
+HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 # vim:syntax=sh:ai:sw=4:ts=4:et

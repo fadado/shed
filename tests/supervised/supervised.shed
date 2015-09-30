@@ -4,13 +4,13 @@
 
 IMAGE='shed/supervised'
 
-HOSTNAME=$(basename $BASH_SOURCE .shed)
-
 INTERACTIVE='true'
 
 TTY='false'
 
 # Seconds for worker
 CMD='3'
+
+HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 # vim:syntax=sh:ai:sw=4:ts=4

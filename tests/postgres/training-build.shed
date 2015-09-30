@@ -8,10 +8,10 @@ ENVIRON=(
 	[TERM]='screen-256color'	# 'xtem-256color'
 )
 
-HOSTNAME=$(basename $BASH_SOURCE .shed)
-
 PUBLISH=(
 	'127.0.0.2:5432:5432'
 )
+
+HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 # vim:syntax=sh:ai:sw=4:ts=4:et

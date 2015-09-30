@@ -21,4 +21,7 @@ LOG_DRIVER='journald'
 #	LOG_DRIVER='journald'
 #fi
 
+# Allways define a new HOSTNAME after testing local value
+#?HOSTNAME=$(basename $BASH_SOURCE .shed)
+
 # vim:syntax=sh:ai:sw=8:ts=8
