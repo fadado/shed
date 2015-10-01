@@ -61,10 +61,9 @@ function strindex { # position of $2 in $1
 ########################################################################
 
 if [[ -e ./Shedfile ]]; then
-    bash -n ./Shedfile || fatal "Syntax error loading ./Shedfile"
     declare -a PROJECT BUILDS IMAGES CONTAINERS
     unset GROUPS; declare -A GROUPS
-    source ./Shedfile
+    source ./Shedfile || fatal "Syntax error loading ./Shedfile"
 fi
 
 ########################################################################
@@ -550,8 +549,8 @@ function container_build {
     local   -a  VOLUME
     local   -a  VOLUMES_FROM
 
-    bash -n $shedfile || fatal "Syntax error loading $shedfile"
-    source $shedfile    # source definitions
+    # source definitions
+    source $shedfile || fatal "Syntax error loading $shedfile"
 
     [[ -n $IMAGE ]] || fatal 'IMAGE must be defined'
 

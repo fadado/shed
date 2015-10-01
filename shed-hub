@@ -54,17 +54,15 @@ function pager {        # colorized less
 ########################################################################
 
 if [[ -e ./Shedfile ]]; then
-    bash -n ./Shedfile || fatal "Syntax error loading ./Shedfile"
     declare -a PROJECT BUILDS IMAGES CONTAINERS
     unset GROUPS; declare -A GROUPS
-    source ./Shedfile
+    source ./Shedfile || fatal "Syntax error loading ./Shedfile"
 fi
 
 # can override TAGS_PREFIX
 for f in ${CONFIG[@]}; do
     [[ -e $f ]] || continue
-    bash -n $f || fatal "Syntax error loading $f"
-    source $f
+    source $f || fatal "Syntax error loading $f"
 done
 
 ########################################################################
