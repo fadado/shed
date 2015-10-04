@@ -1,7 +1,9 @@
 .dockerignore
 .gitignore
 Shedfile
-supervised.shed
+*.shed
+README.md
 Makefile
 build.log
+build-err.log
 worker.c
