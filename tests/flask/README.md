@@ -1,0 +1,20 @@
+# Flask
+
+This example runs a Python application with Flask and Redis.
+
+1. Create images and containers:
+
+        shed-hub build --remove
+
+2. Run application:
+
+        shed-container --propagate ship flask   # foreground
+        shed-container --propagate start flask  # background
+
+3. Visit page:
+
+        curl http://localhost:5000/
+        wget -q -O - http://localhost:5000/
+        lynx http://localhost:5000/
+        elinks http://localhost:5000/
+        # &c.

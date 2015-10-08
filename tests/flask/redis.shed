@@ -1,0 +1,9 @@
+########################################################################
+# Container Shedfile for Redis database
+########################################################################
+
+IMAGE="redis:latest"
+
+HOSTNAME='redis'
+
+# vim:syntax=sh:ai:sw=8:ts=8

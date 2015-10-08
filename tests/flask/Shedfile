@@ -1,0 +1,26 @@
+########################################################################
+# Project Shedfile for a Flask & Redis application
+########################################################################
+
+# prefixed to container and image names
+PROJECT=${PWD##*/}
+
+# images to pull
+IMAGES=(
+	'centos:7'
+	'redis'
+)
+
+# directory names for images to build
+BUILDS=(
+	'base'
+	'.'
+)
+
+# containers to create (order is significant)
+CONTAINERS=(
+	'redis'
+	'flask'
+)
+
+# vim:syntax=sh:ai:sw=4:ts=4

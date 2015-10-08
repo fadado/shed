@@ -1,0 +1,15 @@
+########################################################################
+# Container Shedfile for a Flask & Redis application
+########################################################################
+
+IMAGE="shed/flask"
+
+CMD=( 'app.py' )
+
+HOSTNAME='flask'
+
+LINK=( 'flask_redis' )
+
+PUBLISH=( '127.0.0.1:5000:5000' )
+
+# vim:syntax=sh:ai:sw=8:ts=8
