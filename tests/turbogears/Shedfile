@@ -1,0 +1,24 @@
+########################################################################
+# Project Shedfile for a Turboe Gears application
+########################################################################
+
+# prefixed to container and image names
+PROJECT=${PWD##*/}
+
+# images to pull
+IMAGES=(
+	'centos:7'
+)
+
+# directory names for images to build
+BUILDS=(
+	'base'
+	'.'
+)
+
+# containers to create (order is significant)
+CONTAINERS=(
+	'turbogears'
+)
+
+# vim:syntax=sh:ai:sw=4:ts=4

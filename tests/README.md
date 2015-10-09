@@ -21,6 +21,8 @@ Example tests grouped in this directory:
 1. [**supervised**](./supervised): shows how to run a _Bash_ script inside the container with PID 1 and
 a supervised worker service as a background job.
 
+1. [**turbogears**](./turbogears): runs a Python application with Turbo Gears.
+
 <!--
 vim:syntax=markdown:et:ts=4:sw=4:ai
 -->

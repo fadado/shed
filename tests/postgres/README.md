@@ -50,7 +50,6 @@ How to test:
         shed-container start postgres_starttime
         shed-container logs postgres_starttime
         psql -h 127.0.0.3 -U postgres
-        # etc.
 
 5. Verify all three databases are running simultaneously:
 

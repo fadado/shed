@@ -2,15 +2,19 @@
 # Container Shedfile for supervised service
 ########################################################################
 
+# Base image
 IMAGE='shed/supervised'
 
-INTERACTIVE='true'
-
-TTY='false'
+# Container host name
+HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 # Seconds for worker
 CMD='3'
 
-HOSTNAME=$(basename $BASH_SOURCE .shed)
+# Keep STDIN open even if not attached
+INTERACTIVE='true'
+
+# Allocate a pseudo-TTY
+TTY='false'
 
 # vim:syntax=sh:ai:sw=4:ts=4

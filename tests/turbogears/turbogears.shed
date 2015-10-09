@@ -1,0 +1,23 @@
+########################################################################
+# Container Shedfile for 'helloworld' application
+########################################################################
+
+# Base image
+IMAGE='shed/turbogears'
+
+# Parameters to paster serve
+CMD=( 'development.ini' '--reload' )
+
+# Container host name
+HOSTNAME=$(basename $BASH_SOURCE .shed)
+
+# Publish a container's port to the host
+PUBLISH=( '127.0.0.1:8080:8080' )
+
+# Bind mount a volume
+VOLUME=( "${PWD}/helloworld:/app" )
+
+# Working directory inside the container
+WORKDIR='/app'
+
+# vim:syntax=sh:ai:sw=8:ts=8

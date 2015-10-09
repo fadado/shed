@@ -2,10 +2,10 @@
 # Container Shedfile for F
 ########################################################################
 
+# Base image
 IMAGE='busybox:latest'
 
-LINK=()
-
+# Command to run (a list of words or a string without spaces)
 CMD=(sleep 1000)
 
 # vim:syntax=sh:ai:sw=4:ts=4

@@ -2,10 +2,13 @@
 # Container Shedfile for D
 ########################################################################
 
+# Base image
 IMAGE='busybox:latest'
 
-LINK=(p_c:c p_e:e)
-
+# Command to run (a list of words or a string without spaces)
 CMD=(sleep 1000)
+
+# Add link to another container
+LINK=(p_c:c p_e:e)
 
 # vim:syntax=sh:ai:sw=4:ts=4

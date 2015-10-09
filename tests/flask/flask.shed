@@ -2,14 +2,19 @@
 # Container Shedfile for a Flask & Redis application
 ########################################################################
 
+# Base image
 IMAGE="shed/flask"
 
+# Command to run (a list of words or a string without spaces)
 CMD=( 'app.py' )
 
+# Container host name
 HOSTNAME=$(basename $BASH_SOURCE .shed)
 
+# Add link to another container
 LINK=( 'flask_redis' )
 
+# Publish a container's port to the host
 PUBLISH=( '127.0.0.1:5000:5000' )
 
 # vim:syntax=sh:ai:sw=8:ts=8

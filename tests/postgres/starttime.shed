@@ -2,18 +2,23 @@
 # Container Shedfile for training database loaded at first start time
 ########################################################################
 
+# Base image
 IMAGE="shed/postgres_database:latest"
 
+# Container host name
 HOSTNAME='training'
 
+# Set environment variables
 ENVIRON=( 
 	[TERM]='screen-256color'	# 'xtem-256color'
 )
 
+# Publish a container's port to the host
 PUBLISH=(
 	'127.0.0.3:5432:5432'
 )
 
+# Bind mount a volume
 VOLUME=(
 	"$PWD/buildtime/training.sql.gz:/var/lib/pgsql/database.sql.gz"
 )

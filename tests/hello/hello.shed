@@ -5,6 +5,7 @@
 # Base image
 IMAGE="busybox:latest"
 
+# Command to run (a list of words or a string without spaces)
 CMD=('/bin/echo' 'Hello,' 'world!')
 
 # Allocate a pseudo-TTY

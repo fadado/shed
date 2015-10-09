@@ -2,14 +2,18 @@
 # Container Shedfile for training database loaded at build time
 ########################################################################
 
+# Base image
 IMAGE="shed/postgres_buildtime:latest"
 
+# Container host name
 HOSTNAME=$(basename $BASH_SOURCE .shed)
 
+# Set environment variables
 ENVIRON=( 
 	[TERM]='screen-256color'	# 'xtem-256color'
 )
 
+# Publish a container's port to the host
 PUBLISH=(
 	'127.0.0.2:5432:5432'
 )

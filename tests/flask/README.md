@@ -11,10 +11,9 @@ This example runs a Python application with Flask and Redis.
         shed-container --propagate ship flask   # foreground
         shed-container --propagate start flask  # background
 
-3. Visit page:
+3. Visit page (use any HTTP user agent):
 
         curl http://localhost:5000/
         wget -q -O - http://localhost:5000/
         lynx http://localhost:5000/
         elinks http://localhost:5000/
-        # &c.
