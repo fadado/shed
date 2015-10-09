@@ -10,4 +10,7 @@ COPY training.sql.gz ${HOME}/database.sql.gz
 
 RUN ./startdb.sh BUILD-TIME
 
+# Space still wasted, but...
+RUN rm -f ${HOME}/database.sql.gz
+
 # vim:syntax=dockerfile:ai:sw=4:ts=4:et

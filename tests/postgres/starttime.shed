@@ -1,8 +1,10 @@
 ########################################################################
-# Container Shedfile for training database
+# Container Shedfile for training database loaded at first start time
 ########################################################################
 
 IMAGE="shed/postgres_database:latest"
+
+HOSTNAME='training'
 
 ENVIRON=( 
 	[TERM]='screen-256color'	# 'xtem-256color'
@@ -13,11 +15,9 @@ PUBLISH=(
 )
 
 VOLUME=(
-	"$PWD/training/training.sql.gz:/var/lib/pgsql/database.sql.gz"
+	"$PWD/buildtime/training.sql.gz:/var/lib/pgsql/database.sql.gz"
 )
-# add to VOLUME and uncomment for production sites
+# add uncommented to VOLUME for production sites
 # '/var/lib/pgsql/data:/var/lib/pgsql/data'
-
-HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 # vim:syntax=sh:ai:sw=4:ts=4:et

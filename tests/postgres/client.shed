@@ -1,0 +1,21 @@
+########################################################################
+# Container Shedfile for training database client
+########################################################################
+
+IMAGE="shed/postgres_common:latest"
+
+ENVIRON=( 
+	[TERM]='screen-256color'	# 'xtem-256color'
+)
+
+HOSTNAME='psql'
+
+LINK=( 'postgres_buildtime:training' )
+
+INTERACTIVE='true'
+TTY='true'
+
+ENTRYPOINT='/usr/bin/psql'
+CMD="host=training dbname=postgres user=postgres password=$(<database/pwfile.txt)"
+
+# vim:syntax=sh:ai:sw=4:ts=4:et

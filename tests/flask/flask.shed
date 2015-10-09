@@ -6,7 +6,7 @@ IMAGE="shed/flask"
 
 CMD=( 'app.py' )
 
-HOSTNAME='flask'
+HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 LINK=( 'flask_redis' )
 

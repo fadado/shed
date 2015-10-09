@@ -9,7 +9,7 @@ SHELL=/bin/bash
 
 all: builder
 
-build.log: . base/ common/ server/ database/
+build.log: . base/ common/ server/ database/ buildtime/
 	rm -f build*.log
 	(shed-hub build --remove | tee build.log) 3>&1 1>&2 2>&3 | tee build-err.log
 	-[[ -s build-err.log ]] && echo 'Errors detected while building: see build-err.log'
@@ -18,7 +18,7 @@ build.log: . base/ common/ server/ database/
 builder: build.log
  
 clean:
-	rm -f build.log
+	rm -f build*.log
  
 build: clean builder
  

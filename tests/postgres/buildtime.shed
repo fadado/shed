@@ -1,8 +1,10 @@
 ########################################################################
-# Container Shedfile for training database
+# Container Shedfile for training database loaded at build time
 ########################################################################
 
-IMAGE="shed/postgres_training:latest"
+IMAGE="shed/postgres_buildtime:latest"
+
+HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 ENVIRON=( 
 	[TERM]='screen-256color'	# 'xtem-256color'
@@ -11,7 +13,5 @@ ENVIRON=(
 PUBLISH=(
 	'127.0.0.2:5432:5432'
 )
-
-HOSTNAME=$(basename $BASH_SOURCE .shed)
 
 # vim:syntax=sh:ai:sw=4:ts=4:et

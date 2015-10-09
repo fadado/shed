@@ -16,14 +16,15 @@ BUILDS=(
 	'common'
 	'server'
 	'database'
-	'training'
+	'buildtime'
 )
 
 # containers to create
 CONTAINERS=(
 	'database'
-	'training-build'
-	'training-start'
+	'buildtime'
+	'starttime'
+	'client'
 )
 
 # vim:syntax=sh:ai:sw=4:ts=4:et

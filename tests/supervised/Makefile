@@ -23,7 +23,7 @@ build.log: .
 builder: build.log
 
 clean:
-	@rm -f worker build.log
+	rm -f worker build*.log
 
 build: clean all
 

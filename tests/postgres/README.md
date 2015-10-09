@@ -4,15 +4,17 @@ This example implements five layered images and three independent containers
 running the PostgreSQL database.
 
 The images are build on top of the other in this order: 
-_base_ &rArr; _common_ &rArr; _server_ &rArr; _database_ &rArr; _training_.
+_base_ &rArr; _common_ &rArr; _server_ &rArr; _database_ &rArr; _buildtime_.
 
 The containers run three different database implementations:
 
 1. Plain clean database ([`database.shed`](database.shed)).
 
-1. Database with data inserted at image build time ([`training-build.shed`](training-build.shed)).
+1. Database with data inserted at image build time ([`buildtime.shed`](buildtime.shed)).
 
-1. Database with data inserted at container start time ([`training-start.shed`](training-start.shed)).
+1. Database with data inserted at container start time ([`starttime.shed`](starttime.shed)).
+
+Also is provided the interactive client container ([`client.shed`](client.shed)) for the build time database.
 
 How to test:
 
@@ -37,16 +39,16 @@ How to test:
         shed-container exec -it postgres_database sh
         sh-4.2$ psql    # inside the container
 
-3. Test **postgres_training-build** container.
+3. Test **postgres_buildtime** container.
 
-        shed-container start postgres_training-build
+        shed-container start postgres_buildtime
         psql -h 127.0.0.2 -U postgres
-        # etc.
+        shed-container start -ai postgres_client
 
-4. Test **postgres_training-start** container.
+4. Test **postgres_starttime** container.
 
-        shed-container start postgres_training-start
-        shed-container logs postgres_training-start
+        shed-container start postgres_starttime
+        shed-container logs postgres_starttime
         psql -h 127.0.0.3 -U postgres
         # etc.
 

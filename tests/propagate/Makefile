@@ -18,7 +18,7 @@ build.log: .
 builder: build.log
  
 clean:
-	rm -f build.log
+	rm -f build*.log
  
 build: clean builder
  
