@@ -8,7 +8,7 @@ PROJECT=	# null project
 # images to pull
 IMAGES=( 'busybox:latest' )
 
-# directory names for images to build
+# images to build
 BUILDS=()
 
 # containers to create (order is significant)

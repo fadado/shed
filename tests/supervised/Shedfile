@@ -10,7 +10,7 @@ IMAGES=(
 	'centos:7'
 )
 
-# directory names for images to build
+# images to build
 BUILDS=(
 	'.'
 )

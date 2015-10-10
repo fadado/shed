@@ -11,7 +11,7 @@ IMAGES=(
 	'redis'
 )
 
-# directory names for images to build
+# images to build
 BUILDS=(
 	'base'
 	'.'

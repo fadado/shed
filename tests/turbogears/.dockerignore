@@ -6,3 +6,5 @@ Shedfile
 *.shed
 build-err.log
 build.log
+base/
+helloworld/

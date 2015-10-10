@@ -34,7 +34,9 @@ This is a project Shedfile example:
         'busybox:latest'
     )
 
-    # directory names for images to build
+    # images to build, with names in the form [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    # where NAME must be '.' or an immediate subdirectory and the optional prefix
+    # defaults to the USERNAME 'shed'
     BUILDS=(
         '.'
     )
@@ -79,6 +81,22 @@ and the names are the same (but adapted to the _Bash_ syntax). The file
 [docs/container.shed](docs/container.shed) contains all available parameters
 with default values if defined.
 
+## Configuration
+
+_Shed_ will try to load several configuration files, in this order:
+
+- `/usr/local/etc/shed.conf`
+- `$HOME/.shed`
+- `.shed`
+
+At this moment the only parameter you can define is
+`TAGS_PREFIX`, used to set default prefix for image names (without the ending `/`):
+
+    [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default value for `TAGS_PREFIX` is `shed`.
+
 ## Installation
 
 Simply put the scripts in your `PATH`, or run `make install` in the scripts
@@ -87,7 +105,7 @@ source directory (just in case, read before the `Makefile`).
 ## Documentation and tests
 
 The directories [docs](./docs) and [tests](./tests) contains several files you
-should read and exercise.
+can read and test.
 
 <!--
 vim:syntax=markdown:et:ts=4:sw=4:ai
