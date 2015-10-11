@@ -8,7 +8,11 @@ MAINTAINER Joan Ordinas <jordinas@escoladeltreball.org>
 
 # messages in english
 ENV TZ=Europe/Andorra \
-    LANG=en_GB.UTF-8
+    LANG=en_US.UTF-8
+
+# enable several locales
+RUN localedef --quiet --inputfile /usr/share/i18n/locales/ca_ES@euro ca_ES.utf8; \
+    localedef --quiet --inputfile /usr/share/i18n/locales/es_ES@euro es_ES.utf8;
 
 # all in catalan except messages in english
 #    LC_CTYPE=en_US.UTF-8 \

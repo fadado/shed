@@ -6,9 +6,16 @@ FROM centos:7
 
 MAINTAINER Joan Ordinas <jordinas@escoladeltreball.org>
 
+# enable delta RPMs and add EPEL
+RUN yum --assumeyes install deltarpm; \
+    yum --quiet --assumeyes update; \
+    yum --assumeyes install \
+        epel-release \
+        ; \
+    yum clean all
+
 # add some tools
-RUN yum --quiet --assumeyes update; \
-    yum --quiet --assumeyes install \
+RUN yum --quiet --assumeyes install \
     vim-enhanced \
     mc \
     ; \

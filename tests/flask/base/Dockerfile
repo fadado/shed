@@ -6,12 +6,15 @@ FROM centos:7
 
 MAINTAINER Joan Ordinas <jordinas@escoladeltreball.org>
 
-# first and alone EPEL
-RUN yum --assumeyes install \
+# enable delta RPMs and add EPEL
+RUN yum --assumeyes install deltarpm; \
+    yum --quiet --assumeyes update; \
+    yum --assumeyes install \
         epel-release \
         ; \
     yum clean all
 
+# add apps specific packages
 RUN yum --assumeyes install \
         python-pip \
         ; \

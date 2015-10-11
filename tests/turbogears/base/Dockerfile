@@ -8,14 +8,19 @@ MAINTAINER Joan Ordinas <jordinas@escoladeltreball.org>
 
 # messages in english, assume xterm-like terminal...
 ENV TZ=Europe/Andorra \
-    LANG=en_GB.UTF-8 \
+    LANG=en_US.UTF-8 \
     TERM=xterm-256color
+
+# enable several locales
+RUN localedef --quiet --inputfile /usr/share/i18n/locales/ca_ES@euro ca_ES.utf8; \
+    localedef --quiet --inputfile /usr/share/i18n/locales/es_ES@euro es_ES.utf8;
 
 # disable password for root
 RUN echo 'root:' | chpasswd
 
-# add EPEL
-RUN yum --quiet --assumeyes update; \
+# enable delta RPMs and add EPEL
+RUN yum --assumeyes install deltarpm; \
+    yum --quiet --assumeyes update; \
     yum --assumeyes install \
         epel-release \
         ; \
