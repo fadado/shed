@@ -249,7 +249,10 @@ function hub_build {
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
         docker build $quiet $nocache --tag ${prefix}/${name}:${tag} .  # use Dockerfile
         if [[ $tag != 'latest' ]]; then
-            docker rmi ${prefix}/${name}:latest >/dev/null 2>&1
+            if docker history ${prefix}/${name}:latest >/dev/null 2>&1; then
+                # latest exists
+                docker rmi --force ${prefix}/${name}:latest >/dev/null 2>&1
+            fi
             docker tag ${prefix}/${name}:${tag} ${prefix}/${name}:latest
         fi
         cd $OLDPWD
