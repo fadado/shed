@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9.1'    # Shed version
+declare -r VERSION='0.9.2'    # Shed version
 declare -r SELF=${0##*/}
 
 export LESS=\
@@ -264,7 +264,8 @@ function image_purge {
 
     #shift $((OPTIND-1)); OPTIND=1
 
-    local IMG=$(docker images $all --no-trunc | grep '<none>' | awk '{print $3}')
+    #local IMG=$(docker images $all --no-trunc | grep '<none>' | awk '{print $3}')
+    local IMG=$(docker images --quiet --filter dangling=true)
     [[ -n $IMG ]] && docker rmi $force $prune $IMG
 }
 

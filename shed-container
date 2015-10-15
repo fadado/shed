@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9.1'    # Shed version
+declare -r VERSION='0.9.2'    # Shed version
 declare -r SELF=${0##*/}
 
 export LESS=\
@@ -170,6 +170,10 @@ declare    GROUP=''         # -g
 declare    LATEST=''        # -l
 declare -i PROPAGATE=0      # -p
 
+function extended_options {
+    (( ALL || PROPAGATE )) || [[ -n $GROUP || -n $LATEST ]]
+}
+
 function main {
     (( $# > 0 )) || help_main
 
@@ -256,7 +260,54 @@ function main {
         *) usage command "$1" ;;
     esac
 
+    # remove command
     shift
+
+    # check "project" style command line
+    if (( ${#CONTAINERS[@]} > 0 )); then
+        local -i project_style=0
+
+        local name=${CONTAINERS[${#CONTAINERS[@]}-1]}
+        [[ -n $PROJECT && $PROJECT != $name ]] && name=${PROJECT}_$name
+
+        case $COMMAND in
+            start|stop|restart|pause|unpause|kill)
+                if (( $# == 0 )); then
+                    project_style=1
+                else
+                    case $COMMAND in
+                        stop|restart)
+                            if (( $# == 1 )) && [[ $1 == --time=* ]]; then
+                                project_style=1
+                            elif (( $# == 2 )); then
+                                case $1 in
+                                    -t|--time)
+                                        project_style=1 ;;
+                                esac
+                            fi
+                            ;;
+                        kill)
+                            if (( $# == 1 )) && [[ $1 == --signal=* ]]; then
+                                project_style=1
+                            elif (( $# == 2 )); then
+                                case $1 in
+                                    -s|--signal)
+                                        project_style=1 ;;
+                                esac
+                            fi
+                            ;;
+                    esac
+                fi
+                ;;
+        esac
+        if (( project_style )); then
+            ! extended_options || fatal 'Unexpected options'
+            PROPAGATE=1
+            set -- $@ $name
+        fi
+    fi
+
+    # do it
     container_$COMMAND "$@"
 }
 
@@ -332,8 +383,8 @@ Runtime commands:
         Restart a running container
     run [OPTIONS] IMAGE [COMMAND] [ARG...]
         WARNING: recommended 'start' after 'build'
-    ship [OPTIONS] CONTAINER
-        Start and attach to containers (or follow logs)
+    ship [OPTIONS]
+        Start and attach to containers
     start [OPTIONS] CONTAINER [CONTAINER...]
         Start a stopped container
     stats [OPTIONS] CONTAINER [CONTAINER...]
@@ -360,6 +411,8 @@ declare -r -A EXTENSIONS=(
     ['export']="
   $SELF --latest export"
     ['kill']="
+  $SELF kill
+  $SELF kill [OPTIONS]
   $SELF --all kill [OPTIONS]
   $SELF --group=\"\" kill [OPTIONS]
   $SELF --propagate kill [OPTIONS] CONTAINER
@@ -368,8 +421,10 @@ declare -r -A EXTENSIONS=(
     ['links']="
   $SELF --latest links [OPTIONS]"
     ['logs']="
+  $SELF logs
   $SELF --latest logs [OPTIONS]"
     ['pause']="
+  $SELF pause
   $SELF --all pause
   $SELF --group=\"\" pause
   $SELF --propagate pause CONTAINER
@@ -378,6 +433,8 @@ declare -r -A EXTENSIONS=(
     ['port']="
   $SELF --latest port [PRIVATE_PORT[/PROTO]]"
     ['restart']="
+  $SELF restart
+  $SELF restart [OPTIONS]
   $SELF --all restart [OPTIONS]
   $SELF --group=\"\" restart [OPTIONS]
   $SELF --propagate restart [OPTIONS] CONTAINER
@@ -389,13 +446,8 @@ declare -r -A EXTENSIONS=(
   $SELF --propagate rm [OPTIONS] CONTAINER
   $SELF --latest --propagate rm [OPTIONS]
   $SELF --latest rm [OPTIONS] [CONTAINER...]"
-    ['ship']="
-  $SELF --all ship [OPTIONS]
-  $SELF --group=\"\" ship [OPTIONS]
-  $SELF --propagate ship [OPTIONS] CONTAINER
-  $SELF --latest --propagate ship [OPTIONS]
-  $SELF --latest ship [OPTIONS]"
     ['start']="
+  $SELF start
   $SELF --all start [OPTIONS]
   $SELF --group=\"\" start [OPTIONS]
   $SELF --propagate start [OPTIONS] CONTAINER
@@ -404,6 +456,8 @@ declare -r -A EXTENSIONS=(
     ['status']="
   $SELF --latest status"
     ['stop']="
+  $SELF stop
+  $SELF stop [OPTIONS]
   $SELF --all stop [OPTIONS]
   $SELF --group=\"\" stop [OPTIONS]
   $SELF --propagate stop [OPTIONS] CONTAINER
@@ -412,6 +466,7 @@ declare -r -A EXTENSIONS=(
     ['top']="
   $SELF --latest top [list OPTIONS]"
     ['unpause']="
+  $SELF unpause
   $SELF --all unpause
   $SELF --group=\"\" unpause
   $SELF --propagate unpause CONTAINER
@@ -858,12 +913,18 @@ function container_list {
 }
 
 #  logs [OPTIONS] CONTAINER
+#  logs
 # -l logs [OPTIONS]
 function container_logs {
     help_command logs "$@"
-    [[ $# -gt 0 || -n $LATEST ]] || help_command logs -h
 
-    docker logs "$@" $LATEST
+    if [[ $# -eq 0 && -z $LATEST ]]; then
+        container_ship --follow
+    else
+        [[ $# -gt 0 || -n $LATEST ]] || help_command logs -h
+
+        docker logs "$@" $LATEST
+    fi
 }
 
 # port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
@@ -968,13 +1029,7 @@ function container_start { cmd_agpl start post stopped "$@"; }
 function container_stop { cmd_agpl stop pre running "$@"; }
 function container_wait { cmd_agpl wait post running "$@"; }
 
-# ship [OPTIONS] CONTAINER
-# Extensions:
-#   -a    ship [OPTIONS]
-#   -g="" ship [OPTIONS]
-#   -p    ship [OPTIONS] CONTAINER
-#   -lp   ship [OPTIONS]
-#   -l    ship [OPTIONS]
+# ship [OPTIONS]
 function container_ship {
     local opt action='ship_start'
     local -i colorize=1
@@ -1002,25 +1057,15 @@ function container_ship {
 
     (( colorize )) && trap "echo -en '\e[0m'" EXIT  # reset text color
 
-    if (( ALL )); then
-        (( $# == 0 )) || help_ship
-        local ctn=$(running)
-        [[ -n $ctn ]] && $action $colorize $ctn
+    (( ${#CONTAINERS[@]} > 0 )) || fatal 'CONTAINERS must be defined in $PWD/Shedfile'
 
-    elif [[ -n $GROUP ]]; then
-        (( $# == 0 )) || help_ship
-        $action $colorize $GROUP
+    local name=${CONTAINERS[${#CONTAINERS[@]}-1]}
+    [[ -n $PROJECT && $PROJECT != $name ]] && name=${PROJECT}_$name
 
-    elif (( PROPAGATE )); then
-        [[ $# -eq 1 || -n $LATEST ]] || help_ship
-        [[ $# -gt 0 && -n $LATEST ]] && help_ship
-        $action $colorize $(post_order $1$LATEST)
+    status $name 2>/dev/null
+    (( $? == $RUNNING )) && action=ship_logs    # force follow
 
-    else
-        [[ $# -eq 1 || -n $LATEST ]] || help_ship
-        [[ $# -gt 0 && -n $LATEST ]] && help_ship
-        $action $colorize $1$LATEST
-    fi
+    $action $colorize $(post_order $name)
 }
 
 function ship_logs {
@@ -1075,16 +1120,12 @@ function ship {
 
 function help_ship {
     cat <<EOF | pager
-Usage: $SELF ship [OPTIONS] CONTAINER
+Usage: $SELF ship [OPTIONS]
 
-Start and attach to containers (or follow logs)
+Start and attach to containers
 
-    -f, --follow=false    Follow container logs
+    -f, --follow=false    Follow running containers logs
     --no-color=false      Produce monochrome output
-
-Extended usage:
-${EXTENSIONS[ship]}
-
 EOF
     exit 1
 }

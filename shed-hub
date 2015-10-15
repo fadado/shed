@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9.1'    # Shed version
+declare -r VERSION='0.9.2'    # Shed version
 declare -r SELF=${0##*/}
 
 declare -ar CONFIG=( '/usr/local/etc/shed.conf' "$HOME/.shed" '.shed' )

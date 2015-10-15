@@ -8,7 +8,7 @@ MAINTAINER Joan Ordinas <jordinas@escoladeltreball.org>
 
 COPY ECHO.sh /home/ECHO.sh
 
-ENTRYPOINT [ "/usr/bin/nc", "-ll", "-p", "7", "-e", "/home/ECHO.sh" ]
+ENTRYPOINT [ "nc", "-ll", "-p", "7", "-e", "/home/ECHO.sh" ]
 
 EXPOSE 7
 

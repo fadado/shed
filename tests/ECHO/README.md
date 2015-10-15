@@ -8,7 +8,7 @@ How to test:
 1. Create containers and attach to **receiver** container:
 
         shed-hub build      # 'shed-hub build --remove' to start again
-        shed-container --propagate start receiver
+        shed-container start
         shed-container attach receiver
 
 2. Inside the container ask something to **echo** at port 7:

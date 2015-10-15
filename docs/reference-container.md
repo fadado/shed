@@ -1,6 +1,6 @@
 # shed-container
 
-    Usage: shed-container [-h | --help
+    Usage: shed-container [-h | --help | -V]
            shed-container [OPTIONS] <command> [<args>]
     
     Options:
@@ -9,6 +9,7 @@
         -h, --help      Help information
         -l, --latest    Apply command to the latest created container
         -p, --propagate Propagate command to linked containers
+        -V              Show version information
     
     General commands:
         build [OPTIONS] FILE
@@ -54,8 +55,8 @@
             Restart a running container
         run [OPTIONS] IMAGE [COMMAND] [ARG...]
             WARNING: recommended 'start' after 'build'
-        ship [OPTIONS] CONTAINER
-            Start and attach to containers (or follow logs)
+        ship [OPTIONS]
+            Start and attach to containers
         start [OPTIONS] CONTAINER [CONTAINER...]
             Start a stopped container
         stats [OPTIONS] CONTAINER [CONTAINER...]
@@ -94,10 +95,6 @@
     container source to stdout.
     
       --help=false       Print usage
-    
-    Extended usage:
-    
-      shed-container --latest cp PATH HOSTPATH
     
 
 ## create
@@ -330,6 +327,8 @@
     
     Extended usage:
     
+      shed-container kill
+      shed-container kill [OPTIONS]
       shed-container --all kill [OPTIONS]
       shed-container --group="" kill [OPTIONS]
       shed-container --propagate kill [OPTIONS] CONTAINER
@@ -351,6 +350,7 @@
     
     Extended usage:
     
+      shed-container logs
       shed-container --latest logs [OPTIONS]
     
 
@@ -364,6 +364,7 @@
     
     Extended usage:
     
+      shed-container pause
       shed-container --all pause
       shed-container --group="" pause
       shed-container --propagate pause CONTAINER
@@ -382,6 +383,8 @@
     
     Extended usage:
     
+      shed-container restart
+      shed-container restart [OPTIONS]
       shed-container --all restart [OPTIONS]
       shed-container --group="" restart [OPTIONS]
       shed-container --propagate restart [OPTIONS] CONTAINER
@@ -455,21 +458,12 @@
 
 ## ship
 
-    Usage: shed-container ship [OPTIONS] CONTAINER
+    Usage: shed-container ship [OPTIONS]
     
-    Start and attach to containers (or follow logs)
+    Start and attach to containers
     
-        -f, --follow=false    Follow container logs
+        -f, --follow=false    Follow running containers logs
         --no-color=false      Produce monochrome output
-    
-    Extended usage:
-    
-      shed-container --all ship [OPTIONS]
-      shed-container --group="" ship [OPTIONS]
-      shed-container --propagate ship [OPTIONS] CONTAINER
-      shed-container --latest --propagate ship [OPTIONS]
-      shed-container --latest ship [OPTIONS]
-    
 
 ## start
 
@@ -483,6 +477,7 @@
     
     Extended usage:
     
+      shed-container start
       shed-container --all start [OPTIONS]
       shed-container --group="" start [OPTIONS]
       shed-container --propagate start [OPTIONS] CONTAINER
@@ -512,6 +507,8 @@
     
     Extended usage:
     
+      shed-container stop
+      shed-container stop [OPTIONS]
       shed-container --all stop [OPTIONS]
       shed-container --group="" stop [OPTIONS]
       shed-container --propagate stop [OPTIONS] CONTAINER
@@ -542,6 +539,7 @@
     
     Extended usage:
     
+      shed-container unpause
       shed-container --all unpause
       shed-container --group="" unpause
       shed-container --propagate unpause CONTAINER

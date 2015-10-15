@@ -11,11 +11,9 @@ How to test:
 
 2. Test containers:
 
-        shed-container list --all
-        shed-container --propagate start p_f
-        shed-container list --all
-        shed-container --propagate pause p_f
-        shed-container --propagate unpause p_f
-        shed-container --propagate stop p_f
+        shed-container start
+        shed-container pause
+        shed-container unpause
+        shed-container stop --time 1
         shed-container --propagate rm p_f
 

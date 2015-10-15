@@ -16,4 +16,4 @@ How to test:
 
 2. Test:
 
-        shed-container ship supervised
+        shed-container ship

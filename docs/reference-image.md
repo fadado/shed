@@ -1,10 +1,11 @@
 # shed-image
 
-    Usage: shed-image [-h | --help]
+    Usage: shed-image [-h | --help | -V]
            shed-image <command> [<args>]
     
     Options:
         -h, --help  Help information
+        -V          Show version information
     
     Commands:
         build [OPTIONS] PATH | URL | -

@@ -8,6 +8,10 @@ This example runs a Python application with Turbo Gears.
 
 2. Run application:
 
+        shed-container ship
+
+   Long format:
+
         shed-container --propagate ship turbogears
 
 3. Visit page (use any HTTP user agent):

@@ -1,10 +1,11 @@
 # shed-hub
 
-    Usage: shed-hub [-h | --help]
+    Usage: shed-hub [-h | --help | -V]
            shed-hub <command> [<args>]
     
     Options:
         -h, --help  Help information
+        -V          Show version information
     
     Commands:
         build [OPTIONS]
