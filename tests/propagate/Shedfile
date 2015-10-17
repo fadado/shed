@@ -11,9 +11,4 @@ IMAGES=( 'busybox:latest' )
 # containers to create
 CONTAINERS=( a c e d b h i g f )	# post-order
 
-# named groups of containers
-GROUPS=(
-	[$PROJECT]="${CONTAINERS[@]}"
-)
-
 # vim:syntax=sh:ai:sw=4:ts=4

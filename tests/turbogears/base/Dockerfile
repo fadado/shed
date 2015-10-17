@@ -36,7 +36,7 @@ RUN yum --assumeyes install \
 EXPOSE 8080
 
 # Not necessary, but...
-RUN mkdir /app
+RUN [ "mkdir", "/app" ]
 WORKDIR /app
 
 # vim:syntax=dockerfile:ai:sw=4:ts=4:et

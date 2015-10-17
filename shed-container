@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9.2'    # Shed version
+declare -r VERSION='1.0'    # Shed version
 declare -r SELF=${0##*/}
 
 export LESS=\
@@ -62,7 +62,6 @@ function strindex { # position of $2 in $1
 
 if [[ -e ./Shedfile ]]; then
     declare -a PROJECT BUILDS IMAGES CONTAINERS
-    unset GROUPS; declare -A GROUPS
     source ./Shedfile || fatal "Syntax error loading ./Shedfile"
 fi
 
@@ -166,12 +165,11 @@ function post_order {
 ########################################################################
 
 declare -i ALL=0            # -a
-declare    GROUP=''         # -g
 declare    LATEST=''        # -l
 declare -i PROPAGATE=0      # -p
 
 function extended_options {
-    (( ALL || PROPAGATE )) || [[ -n $GROUP || -n $LATEST ]]
+    (( PROPAGATE )) || [[ -n $LATEST ]]
 }
 
 function main {
@@ -179,17 +177,15 @@ function main {
 
     local opt COMMAND
 
-    while getopts :Vag:hlp-: opt; do
+    while getopts :Vahlp-: opt; do
         case $opt in
             V) version ;;
             a) ALL=1 ;;
-            g) GROUP=$OPTARG ;; 
             h) help_main ;; 
             l) LATEST=$(latest) ;;
             p) PROPAGATE=1 ;;
             -)  case $OPTARG in
                     all) ALL=1 ;;
-                    group=?*) GROUP=${OPTARG#group=} ;;
                     help) help_main ;;
                     latest) LATEST=$(latest) ;;
                     propagate) PROPAGATE=1 ;;
@@ -200,32 +196,8 @@ function main {
         esac
     done
 
-    [[ ALL -eq 1 && -n $GROUP ]] && fatal '--all conflicts with --group'
     [[ ALL -eq 1 && -n $LATEST ]] && fatal '--all conflicts with --latest'
     (( ALL && PROPAGATE )) && fatal '--all conflicts with --propagate'
-    [[ -n $GROUP && -n $LATEST ]] && fatal '--group conflicts with --latest'
-    [[ -n $GROUP && PROPAGATE -eq 1 ]] && fatal '--group conflicts with --propagate'
-
-    if [[ -n $GROUP ]]; then
-        [[ -e ./Shedfile ]] || fatal 'No Shedfile found for project in .'
-        # '.' means project name if defined or current directory name
-        [[ $GROUP == '.' ]] && GROUP=$PROJECT
-        [[ -z $GROUP ]] && GROUP=${PWD##*/}
-        GROUP=${GROUPS[$GROUP]}
-        [[ -n $GROUP ]] || fatal 'Group not defined'
-        # prefix groups with project name
-        if [[ -n $PROJECT ]]; then
-            local container new
-            for container in $GROUP; do
-                if [[ $PROJECT == $container ]]; then
-                    new="$new $container"   # don't prefix main container
-                else
-                    new="$new ${PROJECT}_$container"
-                fi
-            done
-            GROUP=$new
-        fi
-    fi
 
     shift $((OPTIND-1)); OPTIND=1
 
@@ -333,7 +305,6 @@ Usage: $SELF [-h | --help | -V]
 
 Options:
     -a, --all       Apply command to all containers
-    -g, --group=""  Apply command to containers in named group
     -h, --help      Help information
     -l, --latest    Apply command to the latest created container
     -p, --propagate Propagate command to linked containers
@@ -414,7 +385,6 @@ declare -r -A EXTENSIONS=(
   $SELF kill
   $SELF kill [OPTIONS]
   $SELF --all kill [OPTIONS]
-  $SELF --group=\"\" kill [OPTIONS]
   $SELF --propagate kill [OPTIONS] CONTAINER
   $SELF --latest --propagate kill [OPTIONS]
   $SELF --latest kill [OPTIONS] [CONTAINER...]"
@@ -426,7 +396,6 @@ declare -r -A EXTENSIONS=(
     ['pause']="
   $SELF pause
   $SELF --all pause
-  $SELF --group=\"\" pause
   $SELF --propagate pause CONTAINER
   $SELF --latest --propagate pause
   $SELF --latest pause [CONTAINER...]"
@@ -436,20 +405,17 @@ declare -r -A EXTENSIONS=(
   $SELF restart
   $SELF restart [OPTIONS]
   $SELF --all restart [OPTIONS]
-  $SELF --group=\"\" restart [OPTIONS]
   $SELF --propagate restart [OPTIONS] CONTAINER
   $SELF --latest --propagate restart [OPTIONS]
   $SELF --latest restart [OPTIONS] [CONTAINER...]"
     ['rm']="
   $SELF --all rm [OPTIONS]
-  $SELF --group=\"\" rm [OPTIONS]
   $SELF --propagate rm [OPTIONS] CONTAINER
   $SELF --latest --propagate rm [OPTIONS]
   $SELF --latest rm [OPTIONS] [CONTAINER...]"
     ['start']="
   $SELF start
   $SELF --all start [OPTIONS]
-  $SELF --group=\"\" start [OPTIONS]
   $SELF --propagate start [OPTIONS] CONTAINER
   $SELF --latest --propagate start [OPTIONS]
   $SELF --latest start [OPTIONS] [CONTAINER...]"
@@ -459,7 +425,6 @@ declare -r -A EXTENSIONS=(
   $SELF stop
   $SELF stop [OPTIONS]
   $SELF --all stop [OPTIONS]
-  $SELF --group=\"\" stop [OPTIONS]
   $SELF --propagate stop [OPTIONS] CONTAINER
   $SELF --latest --propagate stop [OPTIONS]
   $SELF --latest stop [OPTIONS] [CONTAINER...]"
@@ -468,13 +433,11 @@ declare -r -A EXTENSIONS=(
     ['unpause']="
   $SELF unpause
   $SELF --all unpause
-  $SELF --group=\"\" unpause
   $SELF --propagate unpause CONTAINER
   $SELF --latest --propagate unpause
   $SELF --latest unpause [CONTAINER...]"
     ['wait']="
   $SELF --all wait
-  $SELF --group=\"\" wait
   $SELF --propagate wait CONTAINER
   $SELF --latest --propagate wait
   $SELF --latest wait [CONTAINER...]"
@@ -615,6 +578,10 @@ function container_build {
     fi
     rm -f $CIDFILE
 
+    if [[ -n $PROJECT ]]; then
+        local LABEL_PROJECT='--label=shed.project='$PROJECT
+    fi
+
     [[ -n $BLKIO_WEIGHT ]] &&   BLKIO_WEIGHT="--blkio-weight=$BLKIO_WEIGHT"
     [[ -n $CGROUP_PARENT ]] &&  CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
     [[ -n $CIDFILE ]] &&        CIDFILE="--cidfile=$CIDFILE"
@@ -718,6 +685,7 @@ function container_build {
         ${ENVIRON[@]} \
         ${EXPOSE[@]} \
         ${GROUP_ADD[@]} \
+        ${LABEL_PROJECT} \
         ${LABEL[@]} \
         ${LABEL_FILE[@]} \
         ${LINK[@]} \
@@ -987,7 +955,6 @@ function container_top {
 # `cmd` [OPTIONS] CONTAINER [CONTAINER...]
 # Extensions:
 #   -a    `cmd` [OPTIONS]
-#   -g="" `cmd` [OPTIONS]
 #   -p    `cmd` [OPTIONS] CONTAINER
 #   -lp   `cmd` [OPTIONS]
 #   -l    `cmd` [OPTIONS] [CONTAINER...]
@@ -998,11 +965,6 @@ function cmd_agpl {
     if (( ALL )); then
         local ctn=$($who)
         [[ -n $ctn ]] && docker $cmd "$@" $ctn
-
-    elif [[ -n $GROUP ]]; then
-        local grp=$GROUP    # perhaps is not necessary to reverse?
-        [[ $order == 'pre' ]] && grp=$(reversed $grp)
-        docker $cmd "$@" $grp
 
     elif (( PROPAGATE )); then
         local container
@@ -1133,7 +1095,6 @@ EOF
 # `cmd` CONTAINER
 # Extensions:
 #   -a    `cmd`
-#   -g="" `cmd`
 #   -p    `cmd` CONTAINER
 #   -lp   `cmd`
 #   -l    `cmd`
@@ -1145,13 +1106,6 @@ function cmd_agpl1 {
 
     if (( ALL )); then
         for container in $($who); do
-            cond_$cmd $container
-        done
-
-    elif [[ -n $GROUP ]]; then
-        local grp=$GROUP
-        [[ $order == 'pre' ]] && grp=$(reversed $grp)
-        for container in $grp; do
             cond_$cmd $container
         done
 
@@ -1190,7 +1144,6 @@ function container_unpause { cmd_agpl1 unpause post paused "$@"; }
 # status CONTAINER
 # Extensions:
 #   -a    status
-#   -g="" status
 #   -p    status CONTAINER
 #   -lp   status
 #   -l    status
@@ -1213,11 +1166,6 @@ function container_status {
 
     if (( ALL )); then
         for container in $(created | sort); do
-            status $container
-        done
-
-    elif [[ -n $GROUP ]]; then
-        for container in $GROUP; do
             status $container
         done
 

@@ -14,7 +14,4 @@ BUILDS=()
 # containers to create (order is significant)
 CONTAINERS=( 'create' )
 
-# named groups of containers
-GROUPS=()
-
 # vim:syntax=sh:ai:sw=4:ts=4

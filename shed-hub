@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='0.9.2'    # Shed version
+declare -r VERSION='1.0'    # Shed version
 declare -r SELF=${0##*/}
 
 declare -ar CONFIG=( '/usr/local/etc/shed.conf' "$HOME/.shed" '.shed' )
@@ -55,7 +55,6 @@ function pager {        # colorized less
 
 if [[ -e ./Shedfile ]]; then
     declare -a PROJECT BUILDS IMAGES CONTAINERS
-    unset GROUPS; declare -A GROUPS
     source ./Shedfile || fatal "Syntax error loading ./Shedfile"
 fi
 
@@ -249,9 +248,9 @@ function hub_build {
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
         docker build $quiet $nocache --tag ${prefix}/${name}:${tag} .  # use Dockerfile
         if [[ $tag != 'latest' ]]; then
-            if docker history ${prefix}/${name}:latest >/dev/null 2>&1; then
+            if docker history ${prefix}/${name}:latest &>/dev/null; then
                 # latest exists
-                docker rmi --force ${prefix}/${name}:latest >/dev/null 2>&1
+                docker rmi --force ${prefix}/${name}:latest &>/dev/null
             fi
             docker tag ${prefix}/${name}:${tag} ${prefix}/${name}:latest
         fi

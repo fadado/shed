@@ -21,9 +21,4 @@ CONTAINERS=(
 	'receiver'
 )
 
-# named groups of containers (optional)
-GROUPS=( 
-	['echo']="${CONTAINERS[@]}"
-)
-
 # vim:syntax=sh:ai:sw=4:ts=4

@@ -47,11 +47,6 @@ This is a project Shedfile example:
         'receiver'
     )
 
-    # named groups of containers (optional)
-    GROUPS=( 
-        ['echo']="${CONTAINERS[@]}"
-    )
-
 This is a container Shedfile example:
 
     # Base image
