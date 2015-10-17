@@ -25,7 +25,7 @@ build_image() {
 	echo
 
 	echo -e '# Commands\n'
-	for cmd in build commit history images import list load purge rm save tag
+	for cmd in build commit history images import load rm save tag
 	do
 		echo -e "## $cmd\n"
 		../shed-image $cmd -h | clean
@@ -40,7 +40,7 @@ build_container() {
 	echo
 
 	echo -e '# General commands\n'
-	for cmd in build cp create diff export links list port ps rename rm status
+	for cmd in build cp create diff export links port ps rename rm status
 	do
 		echo -e "## $cmd\n"
 		../shed-container $cmd -h | clean
@@ -48,7 +48,7 @@ build_container() {
 	done
     
 	echo -e '# Runtime commands\n'
-	for cmd in attach enter exec kill logs pause restart run ship start stats stop top unpause wait
+	for cmd in attach exec kill logs pause restart run ship start stats stop top unpause wait
 	do
 		echo -e "## $cmd\n"
 		../shed-container $cmd -h | clean

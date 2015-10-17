@@ -5,7 +5,6 @@
     
     Options:
         -a, --all       Apply command to all containers
-        -g, --group=""  Apply command to containers in named group
         -h, --help      Help information
         -l, --latest    Apply command to the latest created container
         -p, --propagate Propagate command to linked containers
@@ -25,8 +24,6 @@
             Export the contents of a filesystem as a tar archive to STDOUT
         links [OPTIONS] CONTAINER
             Show direct links of a container
-        list [OPTIONS]
-            List containers
         port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
             Lookup the public-facing port that is NAT-ed to PRIVATE_PORT
         ps [OPTIONS]
@@ -41,8 +38,6 @@
     Runtime commands:
         attach [OPTIONS] CONTAINER
             Attach to a running container
-        enter CONTAINER [COMMAND [ARG...]]
-            Run a command in a running container using nsenter
         exec [OPTIONS] [CONTAINER COMMAND [ARG...]]
             Run a command in a running container
         kill [OPTIONS] CONTAINER [CONTAINER...]
@@ -63,7 +58,7 @@
             Display a live stream of one or more containers' resource usage statistics
         stop [OPTIONS] CONTAINER [CONTAINER...]
             Stop a running container
-        top CONTAINER [list OPTIONS]
+        top CONTAINER [ps OPTIONS]
             Lookup the running processes of a container
         unpause CONTAINER [CONTAINER...]
             Unpause a paused container
@@ -193,25 +188,6 @@
     
         -p, --post=false    Show links in post-order
 
-## list
-
-    Usage:	shed-container list [OPTIONS]
-    
-    List containers
-    
-      -a, --all=false       Show all containers (default shows just running)
-      --before=             Show only container created before Id or Name
-      -f, --filter=[]       Filter output based on conditions provided
-      --format=             Pretty-print containers using a Go template
-      --help=false          Print usage
-      -l, --latest=false    Show the latest created container, include non-running
-      -n=-1                 Show n last created containers, include non-running
-      --no-trunc=false      Don't truncate output
-      -q, --quiet=false     Only display numeric IDs
-      -s, --size=false      Display total file sizes
-      --since=              Show created since Id or Name, include non-running
-    
-
 ## port
 
     Usage:	shed-container port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
@@ -268,7 +244,6 @@
     Extended usage:
     
       shed-container --all rm [OPTIONS]
-      shed-container --group="" rm [OPTIONS]
       shed-container --propagate rm [OPTIONS] CONTAINER
       shed-container --latest --propagate rm [OPTIONS]
       shed-container --latest rm [OPTIONS] [CONTAINER...]
@@ -297,12 +272,6 @@
       shed-container --latest attach [OPTIONS]
     
 
-## enter
-
-    Usage: shed-container enter CONTAINER [COMMAND [ARG...]]
-    
-    Run a command in a running container using nsenter
-
 ## exec
 
     Usage:	shed-container exec [OPTIONS] CONTAINER COMMAND [ARG...]
@@ -330,7 +299,6 @@
       shed-container kill
       shed-container kill [OPTIONS]
       shed-container --all kill [OPTIONS]
-      shed-container --group="" kill [OPTIONS]
       shed-container --propagate kill [OPTIONS] CONTAINER
       shed-container --latest --propagate kill [OPTIONS]
       shed-container --latest kill [OPTIONS] [CONTAINER...]
@@ -366,7 +334,6 @@
     
       shed-container pause
       shed-container --all pause
-      shed-container --group="" pause
       shed-container --propagate pause CONTAINER
       shed-container --latest --propagate pause
       shed-container --latest pause [CONTAINER...]
@@ -386,7 +353,6 @@
       shed-container restart
       shed-container restart [OPTIONS]
       shed-container --all restart [OPTIONS]
-      shed-container --group="" restart [OPTIONS]
       shed-container --propagate restart [OPTIONS] CONTAINER
       shed-container --latest --propagate restart [OPTIONS]
       shed-container --latest restart [OPTIONS] [CONTAINER...]
@@ -479,7 +445,6 @@
     
       shed-container start
       shed-container --all start [OPTIONS]
-      shed-container --group="" start [OPTIONS]
       shed-container --propagate start [OPTIONS] CONTAINER
       shed-container --latest --propagate start [OPTIONS]
       shed-container --latest start [OPTIONS] [CONTAINER...]
@@ -510,7 +475,6 @@
       shed-container stop
       shed-container stop [OPTIONS]
       shed-container --all stop [OPTIONS]
-      shed-container --group="" stop [OPTIONS]
       shed-container --propagate stop [OPTIONS] CONTAINER
       shed-container --latest --propagate stop [OPTIONS]
       shed-container --latest stop [OPTIONS] [CONTAINER...]
@@ -526,7 +490,7 @@
     
     Extended usage:
     
-      shed-container --latest top [list OPTIONS]
+      shed-container --latest top [ps OPTIONS]
     
 
 ## unpause
@@ -541,7 +505,6 @@
     
       shed-container unpause
       shed-container --all unpause
-      shed-container --group="" unpause
       shed-container --propagate unpause CONTAINER
       shed-container --latest --propagate unpause
       shed-container --latest unpause [CONTAINER...]
@@ -558,7 +521,6 @@
     Extended usage:
     
       shed-container --all wait
-      shed-container --group="" wait
       shed-container --propagate wait CONTAINER
       shed-container --latest --propagate wait
       shed-container --latest wait [CONTAINER...]

@@ -18,12 +18,8 @@
             List images
         import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]
             Create an empty filesystem image from the contents of a tarbal
-        list [OPTIONS] [REPOSITORY]
-            List images
         load [OPTIONS]
             Load an image from a tar archive
-        purge [OPTIONS]
-            Remove images tagged '<none>'
         rm [OPTIONS] IMAGE [IMAGE...]
             Remove one or more images
         save [OPTIONS] IMAGE [IMAGE...]
@@ -107,19 +103,6 @@
       -c, --change=[]    Apply Dockerfile instruction to the created image
       --help=false       Print usage
 
-## list
-
-    Usage:	shed-image list [OPTIONS] [REPOSITORY]
-    
-    List images
-    
-      -a, --all=false      Show all images (default hides intermediate images)
-      --digests=false      Show digests
-      -f, --filter=[]      Filter output based on conditions provided
-      --help=false         Print usage
-      --no-trunc=false     Don't truncate output
-      -q, --quiet=false    Only show numeric IDs
-
 ## load
 
     Usage:	shed-image load [OPTIONS]
@@ -128,16 +111,6 @@
     
       --help=false       Print usage
       -i, --input=       Read from a tar archive file, instead of STDIN
-
-## purge
-
-    Usage: shed-image purge [OPTIONS]
-    
-    Remove images tagged '<none>'
-    
-      -a, --all=false      Show all images (by default filter out the intermediate image layers)
-      -f, --force=false    Force removal of the image
-      --no-prune=false     Do not delete untagged parents
 
 ## rm
 

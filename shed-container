@@ -51,10 +51,10 @@ function reversed { # reverse words
     echo $s
 }
 
-function strindex { # position of $2 in $1
-    local x=${1%%$2*}
-    [[ $x == $1 ]] && echo -1 || echo ${#x}
-}
+#?function strindex { # position of $2 in $1
+#?    local x=${1%%$2*}
+#?    [[ $x == $1 ]] && echo -1 || echo ${#x}
+#?}
 
 ########################################################################
 # Load Shedfile and configuration files
@@ -208,12 +208,10 @@ function main {
         create) COMMAND='create' ;;
         d|di|dif|diff) COMMAND='diff' ;;
         exp|expo|expor|export) COMMAND='export' ;;
-        en|ent|ente|enter) COMMAND='enter' ;;
         e|ex|exe|exec) COMMAND='exec' ;;
         k|ki|kil|kill) COMMAND='kill' ;;
         lo|log|logs) COMMAND='logs' ;;
         lin|link|links) COMMAND='links' ;;
-        l|li|lis|list) COMMAND='list' ;;
         pa|pau|paus|pause) COMMAND='pause' ;;
         p|po|por|port) COMMAND='port' ;;
         ps) COMMAND='ps' ;;
@@ -324,8 +322,6 @@ General commands:
         Export the contents of a filesystem as a tar archive to STDOUT
     links [OPTIONS] CONTAINER
         Show direct links of a container
-    list [OPTIONS]
-        List containers
     port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
         Lookup the public-facing port that is NAT-ed to PRIVATE_PORT
     ps [OPTIONS]
@@ -340,8 +336,6 @@ General commands:
 Runtime commands:
     attach [OPTIONS] CONTAINER
         Attach to a running container
-    enter CONTAINER [COMMAND [ARG...]]
-        Run a command in a running container using nsenter
     exec [OPTIONS] [CONTAINER COMMAND [ARG...]]
         Run a command in a running container
     kill [OPTIONS] CONTAINER [CONTAINER...]
@@ -362,7 +356,7 @@ Runtime commands:
         Display a live stream of one or more containers' resource usage statistics
     stop [OPTIONS] CONTAINER [CONTAINER...]
         Stop a running container
-    top CONTAINER [list OPTIONS]
+    top CONTAINER [ps OPTIONS]
         Lookup the running processes of a container
     unpause CONTAINER [CONTAINER...]
         Unpause a paused container
@@ -429,7 +423,7 @@ declare -r -A EXTENSIONS=(
   $SELF --latest --propagate stop [OPTIONS]
   $SELF --latest stop [OPTIONS] [CONTAINER...]"
     ['top']="
-  $SELF --latest top [list OPTIONS]"
+  $SELF --latest top [ps OPTIONS]"
     ['unpause']="
   $SELF unpause
   $SELF --all unpause
@@ -739,49 +733,49 @@ function container_diff {
     docker diff $1$LATEST   # $1 or $LATEST
 }
 
-# enter CONTAINER [COMMAND [ARG...]]
-function container_enter {
-    local opt
+#?# enter CONTAINER [COMMAND [ARG...]]
+#?function container_enter {
+#?    local opt
+#?
+#?    while getopts :h-: opt; do
+#?        case $opt in
+#?            h) help_enter ;;    
+#?            -)  case $OPTARG in
+#?                    help) help_enter ;;
+#?                    *) help_enter ;;
+#?                esac
+#?                ;;
+#?            ?) help_enter ;;
+#?        esac
+#?    done
+#?
+#?    shift $((OPTIND-1)); OPTIND=1
+#?
+#?    (( UID == 0 )) || fatal 'must be root'
+#?
+#?    local container=$1; shift
+#?    local pid=$(docker inspect --format '{{.State.Pid}}' $container)
+#?    [[ -n $pid ]] || exit 1
+#?
+#?    local args=(--target $pid --mount --uts --ipc --net --pid --)
+#?    local environ=$(cat /proc/$pid/environ | xargs -0 | grep '=')
+#?
+#?    if (( $# == 0 )); then
+#?        #nsenter "${args[@]}" env --ignore-environment $environ su --preserve-environment root
+#?        nsenter "${args[@]}" env --ignore-environment $environ /bin/sh
+#?    else
+#?        nsenter "${args[@]}" env --ignore-environment $environ "$@"
+#?    fi
+#?}
 
-    while getopts :h-: opt; do
-        case $opt in
-            h) help_enter ;;    
-            -)  case $OPTARG in
-                    help) help_enter ;;
-                    *) help_enter ;;
-                esac
-                ;;
-            ?) help_enter ;;
-        esac
-    done
-
-    shift $((OPTIND-1)); OPTIND=1
-
-    (( UID == 0 )) || fatal 'must be root'
-
-    local container=$1; shift
-    local pid=$(docker inspect --format '{{.State.Pid}}' $container)
-    [[ -n $pid ]] || exit 1
-
-    local args=(--target $pid --mount --uts --ipc --net --pid --)
-    local environ=$(cat /proc/$pid/environ | xargs -0 | grep '=')
-
-    if (( $# == 0 )); then
-        #nsenter "${args[@]}" env --ignore-environment $environ su --preserve-environment root
-        nsenter "${args[@]}" env --ignore-environment $environ /bin/sh
-    else
-        nsenter "${args[@]}" env --ignore-environment $environ "$@"
-    fi
-}
-
-function help_enter {
-    cat <<EOF | pager
-Usage: $SELF enter CONTAINER [COMMAND [ARG...]]
-
-Run a command in a running container using nsenter
-EOF
-    exit 1
-}
+#?function help_enter {
+#?    cat <<EOF | pager
+#?Usage: $SELF enter CONTAINER [COMMAND [ARG...]]
+#?
+#?Run a command in a running container using nsenter
+#?EOF
+#?    exit 1
+#?}
 
 # exec [OPTIONS] [CONTAINER COMMAND [ARG...]]
 function container_exec {
@@ -850,36 +844,6 @@ EOF
     exit 1
 }
 
-# list [OPTIONS]
-# Warning: options --quiet and --format are not supported
-# Warning: option --size is ignored
-function container_list {
-    help_command ps@list "$@"
-
-    docker ps "$@" \
-        | { local headers line
-            read headers
-            local -i p1=$(strindex "$headers" CONTAINER)
-            local -i p2=$(strindex "$headers" IMAGE)
-            local -i p3=$(strindex "$headers" COMMAND)
-            local -i p4=$(strindex "$headers" CREATED)
-            local -i p5=$(strindex "$headers" STATUS)
-            local -i p6=$(strindex "$headers" PORTS)
-            local -i p7=$(strindex "$headers" NAMES)
-            sort --key 1.$p7 - | while read -r line; do
-                echo 'NAMES:       ' ${line:$p7}
-                echo 'IMAGE:       ' ${line:$p2:$((p3-p2))}
-                echo 'CONTAINER ID:' ${line:$p1:$((p2-p1))}
-                echo 'CREATED:     ' ${line:$p4:$((p5-p4))}
-                echo 'STATUS:      ' ${line:$p5:$((p6-p5))}
-                echo 'PORTS:       ' ${line:$p6:$((p7-p6))}
-                echo 'COMMAND:     ' ${line:$p3:$((p4-p3))}
-                echo
-            done
-        } \
-        | pager
-}
-
 #  logs [OPTIONS] CONTAINER
 #  logs
 # -l logs [OPTIONS]
@@ -937,8 +901,8 @@ function container_stats {
     docker stats "$@"
 }
 
-# top CONTAINER [list OPTIONS]
-# -l top [list OPTIONS]
+# top CONTAINER [ps OPTIONS]
+# -l top [ps OPTIONS]
 function container_top {
     help_command top "$@"
     [[ $# -gt 0 || -n $LATEST ]] || help_command top -h
