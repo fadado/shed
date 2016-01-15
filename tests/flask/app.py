@@ -1,4 +1,4 @@
-# vim:fileencoding=utf-8:et:ts=4:sw=4
+# Simple Flask & Redis application
 
 from flask import Flask
 from redis import Redis
@@ -13,3 +13,5 @@ def hello():
 
 if __name__ == '__main__':
      application.run(host="0.0.0.0", debug=True)
+
+# vim:fileencoding=utf-8:et:ts=4:sw=4:syntax=python

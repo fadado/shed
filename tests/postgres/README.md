@@ -54,4 +54,3 @@ How to test:
 5. Verify all three databases are running simultaneously:
 
         shed-container ps
-        shed-container list
