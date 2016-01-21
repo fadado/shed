@@ -92,7 +92,7 @@ function running {
 }
 
 function stopped {
-    docker ps --all --filter status=exited \
+    docker ps --all --filter status=exited --filter status=created \
         | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
 }
 
