@@ -291,7 +291,7 @@ function usage {
 Unknown $1: $2
 
 Usage: $SELF [-h | --help]
-       $SELF [OPTIONS] <command> [<args>]
+       $SELF [OPTIONS] COMMAND [ARGS]
 EOF
     exit 1
 }
@@ -299,7 +299,7 @@ EOF
 function help_main {
     cat <<EOF | pager
 Usage: $SELF [-h | --help | -V]
-       $SELF [OPTIONS] <command> [<args>]
+       $SELF [OPTIONS] COMMAND [ARGS]
 
 Options:
     -a, --all       Apply command to all containers

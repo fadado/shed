@@ -57,11 +57,27 @@ build_container() {
     
 } > reference-container.md
 
+build_volume() {
+	echo -e '# shed-volume\n'
+	../shed-volume -h | clean
+	echo
+
+	echo -e '# Commands\n'
+	for cmd in create inspect ls rm
+	do
+		echo -e "## $cmd\n"
+		../shed-volume $cmd -h | clean
+		echo
+	done
+    
+} > reference-volume.md
+
 if (( $# == 0 ))
 then
 	build_hub
 	build_image
 	build_container
+	build_volume
 else
 	for r; do build_$r; done
 fi

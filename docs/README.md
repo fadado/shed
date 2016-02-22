@@ -10,6 +10,8 @@ Reference for the _Shed_ commands:
 
 * [`reference-container.md`](reference-container.md): the online documentation for all [`shed-container`](../shed-container) commands collected in a Markdown document.
 
+* [`reference-volume.md`](reference-volume.md): the online documentation for all [`shed-volume`](../shed-volume) commands collected in a Markdown document.
+
 Templates for Shedfiles:
 
 * [`Shedfile`](Shedfile): project Shedfile example.

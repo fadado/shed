@@ -1,7 +1,7 @@
 # shed-hub
 
     Usage: shed-hub [-h | --help | -V]
-           shed-hub <command> [<args>]
+           shed-hub COMMAND [ARGS]
     
     Options:
         -h, --help  Help information
@@ -52,9 +52,9 @@
     Get real time events from the server
     
       -f, --filter=[]    Filter output based on conditions provided
-      --help=false       Print usage
-      --since=           Show all events created since timestamp
-      --until=           Stream events until this timestamp
+      --help             Print usage
+      --since            Show all events created since timestamp
+      --until            Stream events until this timestamp
 
 ## info
 
@@ -62,7 +62,7 @@
     
     Display system-wide information
     
-      --help=false       Print usage
+      --help             Print usage
 
 ## inspect
 
@@ -70,30 +70,31 @@
     
     Return low-level information on a container or image
     
-      -f, --format=      Format the output using the given go template
-      --help=false       Print usage
-      --type=            Return JSON for specified type, (e.g image or container)
+      -f, --format       Format the output using the given go template
+      --help             Print usage
+      -s, --size         Display total file sizes if the type is container
+      --type             Return JSON for specified type, (e.g image or container)
 
 ## login
 
     Usage:	shed-hub login [OPTIONS] [SERVER]
     
-    Register or log in to a Docker registry server, if no server is
-    specified "https://index.docker.io/v1/" is the default.
+    Register or log in to a Docker registry.
+    If no server is specified, the default is defined by the daemon.
     
-      -e, --email=       Email
-      --help=false       Print usage
-      -p, --password=    Password
-      -u, --username=    Username
+      -e, --email        Email
+      --help             Print usage
+      -p, --password     Password
+      -u, --username     Username
 
 ## logout
 
     Usage:	shed-hub logout [OPTIONS] [SERVER]
     
-    Log out from a Docker registry, if no server is
-    specified "https://index.docker.io/v1/" is the default.
+    Log out from a Docker registry.
+    If no server is specified, the default is defined by the daemon.
     
-      --help=false       Print usage
+      --help             Print usage
 
 ## pull
 
@@ -101,9 +102,9 @@
     
     Pull an image or a repository from a registry
     
-      -a, --all-tags=false            Download all tagged images in the repository
+      -a, --all-tags                  Download all tagged images in the repository
       --disable-content-trust=true    Skip image verification
-      --help=false                    Print usage
+      --help                          Print usage
 
 ## push
 
@@ -112,7 +113,7 @@
     Push an image or a repository to a registry
     
       --disable-content-trust=true    Skip image signing
-      --help=false                    Print usage
+      --help                          Print usage
 
 ## query
 
@@ -126,17 +127,17 @@
     
     Search the Docker Hub for images
     
-      --automated=false    Only show automated builds
-      --help=false         Print usage
-      --no-trunc=false     Don't truncate output
-      -s, --stars=0        Only displays with at least x stars
+      --automated        Only show automated builds
+      --help             Print usage
+      --no-trunc         Don't truncate output
+      -s, --stars        Only displays with at least x stars
 
 ## version
 
     Usage:	shed-hub version [OPTIONS]
     
-    Show the Docker version information.
+    Show the Docker version information
     
-      -f, --format=      Format the output using the given go template
-      --help=false       Print usage
+      -f, --format       Format the output using the given go template
+      --help             Print usage
 

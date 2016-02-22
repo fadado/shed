@@ -1,0 +1,161 @@
+#!/bin/bash
+#
+# shed-volume -- A wrapper for Docker volume management
+#
+# Joan Ordinas <jordinas@escoladeltreball.org>
+
+declare -r VERSION='1.1'    # Shed version
+declare -r SELF=${0##*/}
+
+export LESS=\
+'--chop-long-lines '\
+'--clear-screen '\
+'--hilite-search '\
+'--HILITE-UNREAD '\
+'--ignore-case '\
+'--LONG-PROMPT '\
+'--RAW-CONTROL-CHARS '\
+'--squeeze-blank-lines '\
+'--status-column '\
+
+export LESS_TERMCAP_mb=$'\E[01;31m'        # begin blinking
+export LESS_TERMCAP_md=$'\E[01;37m'        # begin bold
+export LESS_TERMCAP_me=$'\E[0m'            # end mode
+export LESS_TERMCAP_se=$'\E[0m'            # end standout-mode
+export LESS_TERMCAP_so=$'\E[01;44;33m'     # begin standout-mode - info box
+export LESS_TERMCAP_ue=$'\E[0m'            # end underline
+export LESS_TERMCAP_us=$'\E[01;32m'        # begin underline
+
+########################################################################
+# Utililies
+########################################################################
+
+function fatal {    # abort with message
+    echo 1>&2 "fatal: $*"
+    exit 1
+}
+
+function pager {        # colorized less
+    local color=$'\e''[92m'
+    [[ $TERM == 'screen-256color' ]] && color=$'\e''[32m'
+    [[ -z $PAGER ]] && PAGER=$(type -p less)
+    sed -e s/^/$color/ | $PAGER
+}
+
+########################################################################
+# Main and help
+########################################################################
+
+function main {
+    (( $# > 0 )) || help_main
+
+    local opt COMMAND
+
+    while getopts :Vh-: opt; do
+        case $opt in
+            V) version ;; 
+            h) help_main ;; 
+            -)  case $OPTARG in
+                    help) help_main ;;
+                    *) usage option "--$OPTARG" ;;
+                esac
+                ;;
+            ?) usage option "-$OPTARG" ;;
+        esac
+    done
+
+    shift $((OPTIND-1)); OPTIND=1
+
+    case $1 in
+        c|cr|cre|crea|creat|create) COMMAND='create' ;;
+        i|in|ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
+        l|ls) COMMAND='ls' ;;
+        rm) COMMAND='rm' ;;
+        *) usage command "$1" ;;
+    esac
+
+    shift
+    volume_$COMMAND "$@"
+}
+
+function version {
+    echo "$SELF $VERSION"
+    exit 0
+}
+
+function usage {
+    cat 1>&2 <<EOF
+Unknown $1: $2
+
+Usage: $SELF [-h | --help | -V]
+       $SELF COMMAND [ARGS]
+EOF
+    exit 1
+}
+
+function help_main {
+    help_command volume@' ' -h  # dirty hack
+    exit 1
+}
+
+function help_command {
+    local alt cmd=$1 arg=$2
+
+    if [[ $cmd == *@* ]]; then
+        alt=${cmd#*@}   # alternative alias
+        cmd=${cmd%@*}
+    fi
+
+    if [[ $arg == '-h' || $arg == '--help' ]]; then
+        docker $cmd --help 2>&1 \
+            | sed -e '1d' -e "s/docker\s\+$cmd/$SELF ${alt:-$cmd}/g" \
+            | pager
+        exit 1
+    fi
+}
+
+########################################################################
+# Commands
+########################################################################
+
+# volume create [OPTIONS]
+function volume_create {
+    help_command 'volume create'@create "$@"
+#   (( $# > 0 )) || help_command 'volume create'@create -h
+
+    docker volume create "$@"
+}
+
+# volume inspect [OPTIONS] VOLUME [VOLUME...]
+function volume_inspect {
+    help_command 'volume inspect'@inspect "$@"
+   (( $# > 0 )) || help_command 'volume inspect'@inspect -h
+
+    docker volume inspect "$@"
+}
+
+# volume ls [OPTIONS]
+function volume_ls {
+    help_command 'volume ls'@ls "$@"
+#   (( $# > 0 )) || help_command 'volume ls'@ls -h
+
+    docker volume ls "$@"
+}
+
+# volume rm [OPTIONS]
+function volume_rm {
+    help_command 'volume rm'@rm "$@"
+   (( $# > 0 )) || help_command 'volume rm'@rm -h
+
+    docker volume rm "$@"
+}
+
+########################################################################
+# Call main
+########################################################################
+
+main "$@"
+
+exit $?
+
+# vim:syntax=sh:ai:sw=4:ts=4:et

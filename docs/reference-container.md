@@ -1,7 +1,7 @@
 # shed-container
 
     Usage: shed-container [-h | --help | -V]
-           shed-container [OPTIONS] <command> [<args>]
+           shed-container [OPTIONS] COMMAND [ARGS]
     
     Options:
         -a, --all       Apply command to all containers
@@ -80,16 +80,17 @@
 
 ## cp
 
-    Usage:	shed-container cp [OPTIONS] CONTAINER:PATH LOCALPATH|-
-    	shed-container cp [OPTIONS] LOCALPATH|- CONTAINER:PATH
+    Usage:	shed-container cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
+    	shed-container cp [OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
     
-    Copy files/folders between a container and your host.
+    Copy files/folders between a container and the local filesystem
     Use '-' as the source to read a tar archive from stdin
     and extract it to a directory destination in a container.
     Use '-' as the destination to stream a tar archive of a
     container source to stdout.
     
-      --help=false       Print usage
+      --help               Print usage
+      -L, --follow-link    Always follow symbol link in SRC_PATH
     
 
 ## create
@@ -100,57 +101,72 @@
     
       -a, --attach=[]                 Attach to STDIN, STDOUT or STDERR
       --add-host=[]                   Add a custom host-to-IP mapping (host:ip)
-      --blkio-weight=0                Block IO (relative weight), between 10 and 1000
-      -c, --cpu-shares=0              CPU shares (relative weight)
+      --blkio-weight                  Block IO (relative weight), between 10 and 1000
+      --blkio-weight-device=[]        Block IO weight (relative device weight)
+      --cpu-shares                    CPU shares (relative weight)
       --cap-add=[]                    Add Linux capabilities
       --cap-drop=[]                   Drop Linux capabilities
-      --cgroup-parent=                Optional parent cgroup for the container
-      --cidfile=                      Write the container ID to the file
-      --cpu-period=0                  Limit CPU CFS (Completely Fair Scheduler) period
-      --cpu-quota=0                   Limit CPU CFS (Completely Fair Scheduler) quota
-      --cpuset-cpus=                  CPUs in which to allow execution (0-3, 0,1)
-      --cpuset-mems=                  MEMs in which to allow execution (0-3, 0,1)
+      --cgroup-parent                 Optional parent cgroup for the container
+      --cidfile                       Write the container ID to the file
+      --cpu-period                    Limit CPU CFS (Completely Fair Scheduler) period
+      --cpu-quota                     Limit CPU CFS (Completely Fair Scheduler) quota
+      --cpuset-cpus                   CPUs in which to allow execution (0-3, 0,1)
+      --cpuset-mems                   MEMs in which to allow execution (0-3, 0,1)
       --device=[]                     Add a host device to the container
+      --device-read-bps=[]            Limit read rate (bytes per second) from a device
+      --device-read-iops=[]           Limit read rate (IO per second) from a device
+      --device-write-bps=[]           Limit write rate (bytes per second) to a device
+      --device-write-iops=[]          Limit write rate (IO per second) to a device
       --disable-content-trust=true    Skip image verification
       --dns=[]                        Set custom DNS servers
+      --dns-opt=[]                    Set DNS options
       --dns-search=[]                 Set custom DNS search domains
       -e, --env=[]                    Set environment variables
-      --entrypoint=                   Overwrite the default ENTRYPOINT of the image
+      --entrypoint                    Overwrite the default ENTRYPOINT of the image
       --env-file=[]                   Read in a file of environment variables
       --expose=[]                     Expose a port or a range of ports
       --group-add=[]                  Add additional groups to join
-      -h, --hostname=                 Container host name
-      --help=false                    Print usage
-      -i, --interactive=false         Keep STDIN open even if not attached
-      --ipc=                          IPC namespace to use
+      -h, --hostname                  Container host name
+      --help                          Print usage
+      -i, --interactive               Keep STDIN open even if not attached
+      --ip                            Container IPv4 address (e.g. 172.30.100.104)
+      --ip6                           Container IPv6 address (e.g. 2001:db8::33)
+      --ipc                           IPC namespace to use
+      --isolation                     Container isolation level
+      --kernel-memory                 Kernel memory limit
       -l, --label=[]                  Set meta data on a container
       --label-file=[]                 Read in a line delimited file of labels
       --link=[]                       Add link to another container
-      --log-driver=                   Logging driver for container
+      --log-driver                    Logging driver for container
       --log-opt=[]                    Log driver options
-      --lxc-conf=[]                   Add custom lxc options
-      -m, --memory=                   Memory limit
-      --mac-address=                  Container MAC address (e.g. 92:d0:c6:0a:29:33)
-      --memory-swap=                  Total memory (memory + swap), '-1' to disable swap
-      --memory-swappiness=-1          Tuning container memory swappiness (0 to 100)
-      --name=                         Assign a name to the container
-      --net=default                   Set the Network mode for the container
-      --oom-kill-disable=false        Disable OOM Killer
-      -P, --publish-all=false         Publish all exposed ports to random ports
+      -m, --memory                    Memory limit
+      --mac-address                   Container MAC address (e.g. 92:d0:c6:0a:29:33)
+      --memory-reservation            Memory soft limit
+      --memory-swap                   Swap limit equal to memory plus swap: '-1' to enable unlimited swap
+      --memory-swappiness=-1          Tune container memory swappiness (0 to 100)
+      --name                          Assign a name to the container
+      --net=default                   Connect a container to a network
+      --net-alias=[]                  Add network-scoped alias for the container
+      --oom-kill-disable              Disable OOM Killer
+      --oom-score-adj                 Tune host's OOM preferences (-1000 to 1000)
+      -P, --publish-all               Publish all exposed ports to random ports
       -p, --publish=[]                Publish a container's port(s) to the host
-      --pid=                          PID namespace to use
-      --privileged=false              Give extended privileges to this container
-      --read-only=false               Mount the container's root filesystem as read only
+      --pid                           PID namespace to use
+      --privileged                    Give extended privileges to this container
+      --read-only                     Mount the container's root filesystem as read only
       --restart=no                    Restart policy to apply when a container exits
       --security-opt=[]               Security Options
-      -t, --tty=false                 Allocate a pseudo-TTY
-      -u, --user=                     Username or UID (format: <name|uid>[:<group|gid>])
+      --shm-size                      Size of /dev/shm, default value is 64MB
+      --stop-signal=SIGTERM           Signal to stop a container, SIGTERM by default
+      -t, --tty                       Allocate a pseudo-TTY
+      --tmpfs=[]                      Mount a tmpfs directory
+      -u, --user                      Username or UID (format: <name|uid>[:<group|gid>])
       --ulimit=[]                     Ulimit options
-      --uts=                          UTS namespace to use
+      --uts                           UTS namespace to use
       -v, --volume=[]                 Bind mount a volume
-      --volume-driver=                Optional volume driver for the container
+      --volume-driver                 Optional volume driver for the container
       --volumes-from=[]               Mount volumes from the specified container(s)
-      -w, --workdir=                  Working directory inside the container
+      -w, --workdir                   Working directory inside the container
     
 
 ## diff
@@ -159,7 +175,7 @@
     
     Inspect changes on a container's filesystem
     
-      --help=false       Print usage
+      --help             Print usage
     
     Extended usage:
     
@@ -170,10 +186,10 @@
 
     Usage:	shed-container export [OPTIONS] CONTAINER
     
-    Export the contents of a container's filesystem as a tar archive
+    Export a container's filesystem as a tar archive
     
-      --help=false       Print usage
-      -o, --output=      Write to a file, instead of STDOUT
+      --help             Print usage
+      -o, --output       Write to a file, instead of STDOUT
     
     Extended usage:
     
@@ -192,10 +208,9 @@
 
     Usage:	shed-container port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
     
-    List port mappings for the CONTAINER, or lookup the public-facing port that
-    is NAT-ed to the PRIVATE_PORT
+    List port mappings or a specific mapping for the CONTAINER
     
-      --help=false       Print usage
+      --help             Print usage
     
     Extended usage:
     
@@ -208,17 +223,15 @@
     
     List containers
     
-      -a, --all=false       Show all containers (default shows just running)
-      --before=             Show only container created before Id or Name
-      -f, --filter=[]       Filter output based on conditions provided
-      --format=             Pretty-print containers using a Go template
-      --help=false          Print usage
-      -l, --latest=false    Show the latest created container, include non-running
-      -n=-1                 Show n last created containers, include non-running
-      --no-trunc=false      Don't truncate output
-      -q, --quiet=false     Only display numeric IDs
-      -s, --size=false      Display total file sizes
-      --since=              Show created since Id or Name, include non-running
+      -a, --all          Show all containers (default shows just running)
+      -f, --filter=[]    Filter output based on conditions provided
+      --format           Pretty-print containers using a Go template
+      --help             Print usage
+      -l, --latest       Show the latest created container (includes all states)
+      -n=-1              Show n last created containers (includes all states)
+      --no-trunc         Don't truncate output
+      -q, --quiet        Only display numeric IDs
+      -s, --size         Display total file sizes
     
 
 ## rename
@@ -227,7 +240,7 @@
     
     Rename a container
     
-      --help=false       Print usage
+      --help             Print usage
     
 
 ## rm
@@ -236,10 +249,10 @@
     
     Remove one or more containers
     
-      -f, --force=false      Force the removal of a running container (uses SIGKILL)
-      --help=false           Print usage
-      -l, --link=false       Remove the specified link
-      -v, --volumes=false    Remove the volumes associated with the container
+      -f, --force        Force the removal of a running container (uses SIGKILL)
+      --help             Print usage
+      -l, --link         Remove the specified link
+      -v, --volumes      Remove the volumes associated with the container
     
     Extended usage:
     
@@ -263,8 +276,9 @@
     
     Attach to a running container
     
-      --help=false        Print usage
-      --no-stdin=false    Do not attach STDIN
+      --detach-keys       Override the key sequence for detaching a container
+      --help              Print usage
+      --no-stdin          Do not attach STDIN
       --sig-proxy=true    Proxy all received signals to the process
     
     Extended usage:
@@ -278,20 +292,22 @@
     
     Run a command in a running container
     
-      -d, --detach=false         Detached mode: run command in the background
-      --help=false               Print usage
-      -i, --interactive=false    Keep STDIN open even if not attached
-      -t, --tty=false            Allocate a pseudo-TTY
-      -u, --user=                Username or UID (format: <name|uid>[:<group|gid>])
+      -d, --detach         Detached mode: run command in the background
+      --detach-keys        Override the key sequence for detaching a container
+      --help               Print usage
+      -i, --interactive    Keep STDIN open even if not attached
+      --privileged         Give extended privileges to the command
+      -t, --tty            Allocate a pseudo-TTY
+      -u, --user           Username or UID (format: <name|uid>[:<group|gid>])
     
 
 ## kill
 
     Usage:	shed-container kill [OPTIONS] CONTAINER [CONTAINER...]
     
-    Kill a running container using SIGKILL or a specified signal
+    Kill a running container
     
-      --help=false         Print usage
+      --help               Print usage
       -s, --signal=KILL    Signal to send to the container
     
     Extended usage:
@@ -310,11 +326,11 @@
     
     Fetch the logs of a container
     
-      -f, --follow=false        Follow log output
-      --help=false              Print usage
-      --since=                  Show logs since timestamp
-      -t, --timestamps=false    Show timestamps
-      --tail=all                Number of lines to show from the end of the logs
+      -f, --follow        Follow log output
+      --help              Print usage
+      --since             Show logs since timestamp
+      -t, --timestamps    Show timestamps
+      --tail=all          Number of lines to show from the end of the logs
     
     Extended usage:
     
@@ -328,7 +344,7 @@
     
     Pause all processes within a container
     
-      --help=false       Print usage
+      --help             Print usage
     
     Extended usage:
     
@@ -343,9 +359,9 @@
 
     Usage:	shed-container restart [OPTIONS] CONTAINER [CONTAINER...]
     
-    Restart a running container
+    Restart a container
     
-      --help=false       Print usage
+      --help             Print usage
       -t, --time=10      Seconds to wait for stop before killing the container
     
     Extended usage:
@@ -366,60 +382,76 @@
     
       -a, --attach=[]                 Attach to STDIN, STDOUT or STDERR
       --add-host=[]                   Add a custom host-to-IP mapping (host:ip)
-      --blkio-weight=0                Block IO (relative weight), between 10 and 1000
-      -c, --cpu-shares=0              CPU shares (relative weight)
+      --blkio-weight                  Block IO (relative weight), between 10 and 1000
+      --blkio-weight-device=[]        Block IO weight (relative device weight)
+      --cpu-shares                    CPU shares (relative weight)
       --cap-add=[]                    Add Linux capabilities
       --cap-drop=[]                   Drop Linux capabilities
-      --cgroup-parent=                Optional parent cgroup for the container
-      --cidfile=                      Write the container ID to the file
-      --cpu-period=0                  Limit CPU CFS (Completely Fair Scheduler) period
-      --cpu-quota=0                   Limit CPU CFS (Completely Fair Scheduler) quota
-      --cpuset-cpus=                  CPUs in which to allow execution (0-3, 0,1)
-      --cpuset-mems=                  MEMs in which to allow execution (0-3, 0,1)
-      -d, --detach=false              Run container in background and print container ID
+      --cgroup-parent                 Optional parent cgroup for the container
+      --cidfile                       Write the container ID to the file
+      --cpu-period                    Limit CPU CFS (Completely Fair Scheduler) period
+      --cpu-quota                     Limit CPU CFS (Completely Fair Scheduler) quota
+      --cpuset-cpus                   CPUs in which to allow execution (0-3, 0,1)
+      --cpuset-mems                   MEMs in which to allow execution (0-3, 0,1)
+      -d, --detach                    Run container in background and print container ID
+      --detach-keys                   Override the key sequence for detaching a container
       --device=[]                     Add a host device to the container
+      --device-read-bps=[]            Limit read rate (bytes per second) from a device
+      --device-read-iops=[]           Limit read rate (IO per second) from a device
+      --device-write-bps=[]           Limit write rate (bytes per second) to a device
+      --device-write-iops=[]          Limit write rate (IO per second) to a device
       --disable-content-trust=true    Skip image verification
       --dns=[]                        Set custom DNS servers
+      --dns-opt=[]                    Set DNS options
       --dns-search=[]                 Set custom DNS search domains
       -e, --env=[]                    Set environment variables
-      --entrypoint=                   Overwrite the default ENTRYPOINT of the image
+      --entrypoint                    Overwrite the default ENTRYPOINT of the image
       --env-file=[]                   Read in a file of environment variables
       --expose=[]                     Expose a port or a range of ports
       --group-add=[]                  Add additional groups to join
-      -h, --hostname=                 Container host name
-      --help=false                    Print usage
-      -i, --interactive=false         Keep STDIN open even if not attached
-      --ipc=                          IPC namespace to use
+      -h, --hostname                  Container host name
+      --help                          Print usage
+      -i, --interactive               Keep STDIN open even if not attached
+      --ip                            Container IPv4 address (e.g. 172.30.100.104)
+      --ip6                           Container IPv6 address (e.g. 2001:db8::33)
+      --ipc                           IPC namespace to use
+      --isolation                     Container isolation level
+      --kernel-memory                 Kernel memory limit
       -l, --label=[]                  Set meta data on a container
       --label-file=[]                 Read in a line delimited file of labels
       --link=[]                       Add link to another container
-      --log-driver=                   Logging driver for container
+      --log-driver                    Logging driver for container
       --log-opt=[]                    Log driver options
-      --lxc-conf=[]                   Add custom lxc options
-      -m, --memory=                   Memory limit
-      --mac-address=                  Container MAC address (e.g. 92:d0:c6:0a:29:33)
-      --memory-swap=                  Total memory (memory + swap), '-1' to disable swap
-      --memory-swappiness=-1          Tuning container memory swappiness (0 to 100)
-      --name=                         Assign a name to the container
-      --net=default                   Set the Network mode for the container
-      --oom-kill-disable=false        Disable OOM Killer
-      -P, --publish-all=false         Publish all exposed ports to random ports
+      -m, --memory                    Memory limit
+      --mac-address                   Container MAC address (e.g. 92:d0:c6:0a:29:33)
+      --memory-reservation            Memory soft limit
+      --memory-swap                   Swap limit equal to memory plus swap: '-1' to enable unlimited swap
+      --memory-swappiness=-1          Tune container memory swappiness (0 to 100)
+      --name                          Assign a name to the container
+      --net=default                   Connect a container to a network
+      --net-alias=[]                  Add network-scoped alias for the container
+      --oom-kill-disable              Disable OOM Killer
+      --oom-score-adj                 Tune host's OOM preferences (-1000 to 1000)
+      -P, --publish-all               Publish all exposed ports to random ports
       -p, --publish=[]                Publish a container's port(s) to the host
-      --pid=                          PID namespace to use
-      --privileged=false              Give extended privileges to this container
-      --read-only=false               Mount the container's root filesystem as read only
+      --pid                           PID namespace to use
+      --privileged                    Give extended privileges to this container
+      --read-only                     Mount the container's root filesystem as read only
       --restart=no                    Restart policy to apply when a container exits
-      --rm=false                      Automatically remove the container when it exits
+      --rm                            Automatically remove the container when it exits
       --security-opt=[]               Security Options
+      --shm-size                      Size of /dev/shm, default value is 64MB
       --sig-proxy=true                Proxy received signals to the process
-      -t, --tty=false                 Allocate a pseudo-TTY
-      -u, --user=                     Username or UID (format: <name|uid>[:<group|gid>])
+      --stop-signal=SIGTERM           Signal to stop a container, SIGTERM by default
+      -t, --tty                       Allocate a pseudo-TTY
+      --tmpfs=[]                      Mount a tmpfs directory
+      -u, --user                      Username or UID (format: <name|uid>[:<group|gid>])
       --ulimit=[]                     Ulimit options
-      --uts=                          UTS namespace to use
+      --uts                           UTS namespace to use
       -v, --volume=[]                 Bind mount a volume
-      --volume-driver=                Optional volume driver for the container
+      --volume-driver                 Optional volume driver for the container
       --volumes-from=[]               Mount volumes from the specified container(s)
-      -w, --workdir=                  Working directory inside the container
+      -w, --workdir                   Working directory inside the container
     
 
 ## ship
@@ -437,9 +469,10 @@
     
     Start one or more stopped containers
     
-      -a, --attach=false         Attach STDOUT/STDERR and forward signals
-      --help=false               Print usage
-      -i, --interactive=false    Attach container's STDIN
+      -a, --attach         Attach STDOUT/STDERR and forward signals
+      --detach-keys        Override the key sequence for detaching a container
+      --help               Print usage
+      -i, --interactive    Attach container's STDIN
     
     Extended usage:
     
@@ -452,22 +485,23 @@
 
 ## stats
 
-    Usage:	shed-container stats [OPTIONS] CONTAINER [CONTAINER...]
+    Usage:	shed-container stats [OPTIONS] [CONTAINER...]
     
-    Display a live stream of one or more containers' resource usage statistics
+    Display a live stream of container(s) resource usage statistics
     
-      --help=false         Print usage
-      --no-stream=false    Disable streaming stats and only pull the first result
+      -a, --all          Show all containers (default shows just running)
+      --help             Print usage
+      --no-stream        Disable streaming stats and only pull the first result
     
 
 ## stop
 
     Usage:	shed-container stop [OPTIONS] CONTAINER [CONTAINER...]
     
-    Stop a running container by sending SIGTERM and then SIGKILL after a
-    grace period
+    Stop a running container.
+    Sending SIGTERM and then SIGKILL after a grace period
     
-      --help=false       Print usage
+      --help             Print usage
       -t, --time=10      Seconds to wait for stop before killing it
     
     Extended usage:
@@ -486,7 +520,7 @@
     
     Display the running processes of a container
     
-      --help=false       Print usage
+      --help             Print usage
     
     Extended usage:
     
@@ -499,7 +533,7 @@
     
     Unpause all processes within a container
     
-      --help=false       Print usage
+      --help             Print usage
     
     Extended usage:
     
@@ -514,9 +548,9 @@
 
     Usage:	shed-container wait [OPTIONS] CONTAINER [CONTAINER...]
     
-    Block until a container stops, then print its exit code.
+    Block until a container stops, then print its exit code
     
-      --help=false       Print usage
+      --help             Print usage
     
     Extended usage:
     

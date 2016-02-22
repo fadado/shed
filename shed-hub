@@ -117,7 +117,7 @@ function usage {
 Unknown $1: $2
 
 Usage: $SELF [-h | --help | -V]
-       $SELF <command> [<args>]
+       $SELF COMMAND [ARGS]
 EOF
     exit 1
 }
@@ -125,7 +125,7 @@ EOF
 function help_main  {
     cat <<EOF | pager
 Usage: $SELF [-h | --help | -V]
-       $SELF <command> [<args>]
+       $SELF COMMAND [ARGS]
 
 Options:
     -h, --help  Help information

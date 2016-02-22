@@ -18,7 +18,8 @@ INCREMENTAL=#--incremental
 PANDOC=$(DZSLIDES)
 
 TARGETS=slides-es.html \
-	reference-hub.md reference-image.md reference-container.md 
+	reference-hub.md reference-image.md reference-container.md \
+	reference-volume.md
 
 ########################################################################
 # Rules
@@ -37,6 +38,9 @@ reference-image.md: ../shed-image
 
 reference-container.md: ../shed-container
 	./build-ref.sh container
+
+reference-volume.md: ../shed-volume
+	./build-ref.sh volume
 
 ########################################################################
 # Utilities

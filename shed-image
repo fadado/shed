@@ -98,7 +98,7 @@ function usage {
 Unknown $1: $2
 
 Usage: $SELF [-h | --help | -V]
-       $SELF <command> [<args>]
+       $SELF COMMAND [ARGS]
 EOF
     exit 1
 }
@@ -106,7 +106,7 @@ EOF
 function help_main {
     cat <<EOF | pager
 Usage: $SELF [-h | --help | -V]
-       $SELF <command> [<args>]
+       $SELF COMMAND [ARGS]
 
 Options:
     -h, --help  Help information
@@ -212,8 +212,8 @@ function image_load {
 
 # rm [OPTIONS] IMAGE [IMAGE...]
 function image_rmi {
-    help_command rmi "$@"
-    (( $# > 0 )) || help_command rmi -h
+    help_command rmi@rm "$@"
+    (( $# > 0 )) || help_command rmi@rm -h
 
     docker rmi "$@"
 }
