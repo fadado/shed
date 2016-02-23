@@ -243,10 +243,14 @@ function hub_build {
             tag=$2
         fi
         [[ -d $image ]] || fatal "Directory $image does not exists"
-        cd $image
-        local -l name=${PWD##*/}
+        local -l name
+        if [[ $image == . ]]; then
+            name=${PWD##*/}
+        else
+            name=$image
+        fi
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
-        docker build $quiet $nocache --tag ${prefix}/${name}:${tag} .  # use Dockerfile
+        docker build $quiet $nocache --tag ${prefix}/${name}:${tag} $image
         if [[ $tag != 'latest' ]]; then
             if docker history ${prefix}/${name}:latest &>/dev/null; then
                 # latest exists
@@ -254,7 +258,6 @@ function hub_build {
             fi
             docker tag ${prefix}/${name}:${tag} ${prefix}/${name}:latest
         fi
-        cd $OLDPWD
     done
 
     # build containers
