@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='1.0'    # Shed version
+declare -r VERSION='1.1'    # Shed version
 declare -r SELF=${0##*/}
 
 export LESS=\
@@ -30,22 +30,12 @@ export LESS_TERMCAP_us=$'\E[01;32m'        # begin underline
 # Utililies
 ########################################################################
 
-function fatal {    # abort with message
-    echo 1>&2 "fatal: $*"
-    exit 1
-}
-
 function pager {        # colorized less
     local color=$'\e''[92m'
     [[ $TERM == 'screen-256color' ]] && color=$'\e''[32m'
     [[ -z $PAGER ]] && PAGER=$(type -p less)
     sed -e s/^/$color/ | $PAGER
 }
-
-#?function strindex { # position of $2 in $1
-#?    local x=${1%%$2*}
-#?    [[ $x == $1 ]] && echo -1 || echo ${#x}
-#?}
 
 ########################################################################
 # Main and help

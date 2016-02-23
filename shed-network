@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# shed-volume -- A wrapper for Docker volume management
+# shed-network -- A wrapper for Docker network management
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
@@ -62,15 +62,17 @@ function main {
     shift $((OPTIND-1)); OPTIND=1
 
     case $1 in
-        c|cr|cre|crea|creat|create) COMMAND='create' ;;
-        i|in|ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
-        l|ls) COMMAND='ls' ;;
+        connect) COMMAND='connect' ;;
+        create) COMMAND='create' ;;
+        disconnect) COMMAND='disconnect' ;;
+        inspect) COMMAND='inspect' ;;
+        ls) COMMAND='ls' ;;
         rm) COMMAND='rm' ;;
         *) usage command "$1" ;;
     esac
 
     shift
-    volume_$COMMAND "$@"
+    network_$COMMAND "$@"
 }
 
 function version {
@@ -89,8 +91,8 @@ EOF
 }
 
 function help_main {
-    docker volume --help 2>&1 \
-        | sed -e '1d' -e "s/docker\s\+volume/$SELF/g" \
+    docker network --help 2>&1 \
+        | sed -e '1d' -e "s/docker\s\+network/$SELF/g" \
         | pager
     exit 1
 }
@@ -115,34 +117,51 @@ function help_command {
 # Commands
 ########################################################################
 
-# volume create [OPTIONS]
-function volume_create {
-    help_command 'volume create'@create "$@"
+# network connect...
+function network_connect {
+    help_command 'network connect'@connect "$@"
+   (( $# > 1 )) || help_command 'network connect'@connect -h
 
-    docker volume create "$@"
+    docker network connect "$@"
 }
 
-# volume inspect [OPTIONS] VOLUME [VOLUME...]
-function volume_inspect {
-    help_command 'volume inspect'@inspect "$@"
-   (( $# > 0 )) || help_command 'volume inspect'@inspect -h
+# network create...
+function network_create {
+    help_command 'network create'@create "$@"
+   (( $# > 0 )) || help_command 'network create'@create -h
 
-    docker volume inspect "$@"
+    docker network create "$@"
 }
 
-# volume ls [OPTIONS]
-function volume_ls {
-    help_command 'volume ls'@ls "$@"
+# network disconnect...
+function network_disconnect {
+    help_command 'network disconnect'@disconnect "$@"
+   (( $# > 1 )) || help_command 'network disconnect'@disconnect -h
 
-    docker volume ls "$@"
+    docker network create "$@"
 }
 
-# volume rm [OPTIONS]
-function volume_rm {
-    help_command 'volume rm'@rm "$@"
-   (( $# > 0 )) || help_command 'volume rm'@rm -h
+# network inspect ...
+function network_inspect {
+    help_command 'network inspect'@inspect "$@"
+   (( $# > 0 )) || help_command 'network inspect'@inspect -h
 
-    docker volume rm "$@"
+    docker network inspect "$@"
+}
+
+# network ls...
+function network_ls {
+    help_command 'network ls'@ls "$@"
+
+    docker network ls "$@"
+}
+
+# network rm...
+function network_rm {
+    help_command 'network rm'@rm "$@"
+   (( $# > 0 )) || help_command 'network rm'@rm -h
+
+    docker network rm "$@"
 }
 
 ########################################################################

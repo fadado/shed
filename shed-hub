@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='1.0'    # Shed version
+declare -r VERSION='1.1'    # Shed version
 declare -r SELF=${0##*/}
 
 declare -ar CONFIG=( '/usr/local/etc/shed.conf' "$HOME/.shed" '.shed' )
@@ -308,6 +308,37 @@ function hub_inspect {
     docker inspect "$@"
 }
 
+# login [OPTIONS] [SERVER]
+function hub_login {
+    help_command login "$@"
+
+    docker login "$@"
+}
+
+# logout [OPTIONS] [SERVER]
+function hub_logout {
+    help_command logout "$@"
+    (( $# < 2 )) || help_command logout -h
+
+    docker logout "$1"
+}
+
+# pull [OPTIONS] NAME[:TAG | @DIGEST]
+function hub_pull {
+    help_command pull "$@"
+    (( $# > 0 )) || help_command pull -h
+
+    docker pull "$@"
+}
+
+# push [OPTIONS] NAME[:TAG]
+function hub_push {
+    help_command push "$@"
+    (( $# == 1 )) || help_command push -h
+
+    docker push "$1"
+}
+
 # query [OPTIONS] CONTAINER | IMAGE
 function hub_query {
     local opt
@@ -352,37 +383,6 @@ Usage: query [OPTIONS] CONTAINER | IMAGE [QUERY]
 Return YAML formated information on a container or image
 EOF
     exit 1
-}
-
-# login [OPTIONS] [SERVER]
-function hub_login {
-    help_command login "$@"
-
-    docker login "$@"
-}
-
-# logout [OPTIONS] [SERVER]
-function hub_logout {
-    help_command logout "$@"
-    (( $# < 2 )) || help_command logout -h
-
-    docker logout "$1"
-}
-
-# pull [OPTIONS] NAME[:TAG | @DIGEST]
-function hub_pull {
-    help_command pull "$@"
-    (( $# > 0 )) || help_command pull -h
-
-    docker pull "$@"
-}
-
-# push [OPTIONS] NAME[:TAG]
-function hub_push {
-    help_command push "$@"
-    (( $# == 1 )) || help_command push -h
-
-    docker push "$1"
 }
 
 # search [OPTIONS] TERM

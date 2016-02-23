@@ -4,7 +4,7 @@
 #
 # Joan Ordinas <jordinas@escoladeltreball.org>
 
-declare -r VERSION='1.0'    # Shed version
+declare -r VERSION='1.1'    # Shed version
 declare -r SELF=${0##*/}
 
 export LESS=\
@@ -50,11 +50,6 @@ function reversed { # reverse words
     done
     echo $s
 }
-
-#?function strindex { # position of $2 in $1
-#?    local x=${1%%$2*}
-#?    [[ $x == $1 ]] && echo -1 || echo ${#x}
-#?}
 
 ########################################################################
 # Load Shedfile and configuration files
