@@ -19,7 +19,7 @@ PANDOC=$(DZSLIDES)
 
 TARGETS=slides-es.html \
 	reference-hub.md reference-image.md reference-container.md \
-	reference-volume.md
+	reference-volume.md reference-network.md
 
 ########################################################################
 # Rules
@@ -41,6 +41,9 @@ reference-container.md: ../shed-container
 
 reference-volume.md: ../shed-volume
 	./build-ref.sh volume
+
+reference-network.md: ../shed-network
+	./build-ref.sh network
 
 ########################################################################
 # Utilities

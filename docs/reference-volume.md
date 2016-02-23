@@ -1,6 +1,6 @@
 # shed-volume
 
-    Usage:	shed-volume volume [OPTIONS] [COMMAND]
+    Usage:	shed-volume [OPTIONS] [COMMAND]
     
     Manage Docker volumes
     
@@ -10,7 +10,7 @@
       ls                       List volumes
       rm                       Remove a volume
     
-    Run 'shed-volume volume COMMAND --help' for more information on a command
+    Run 'shed-volume COMMAND --help' for more information on a command
     
       --help             Print usage
 

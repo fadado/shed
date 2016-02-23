@@ -10,7 +10,7 @@ PREFIX=/usr/local
 
 INSTALL = install --verbose --compare --mode 555
 
-TOOLS = shed-hub shed-image shed-container shed-volume
+TOOLS = shed-hub shed-image shed-container shed-volume shed-network
 CONFIG = shed.conf
 
 install:
@@ -28,6 +28,7 @@ test:
 	bash -n shed-image
 	bash -n shed-container
 	bash -n shed-volume
+	bash -n shed-network
 	bash -n shed.conf
 	bash -n docs/container.shed
 	bash -n docs/Shedfile

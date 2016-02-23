@@ -62,8 +62,8 @@ function main {
     shift $((OPTIND-1)); OPTIND=1
 
     case $1 in
-        c|cr|cre|crea|creat|create) COMMAND='create' ;;
-        i|in|ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
+        cre|crea|creat|create) COMMAND='create' ;;
+        ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
         l|ls) COMMAND='ls' ;;
         rm) COMMAND='rm' ;;
         *) usage command "$1" ;;

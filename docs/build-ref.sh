@@ -72,12 +72,28 @@ build_volume() {
     
 } > reference-volume.md
 
+build_network() {
+	echo -e '# shed-network\n'
+	../shed-network -h | clean
+	echo
+
+	echo -e '# Commands\n'
+	for cmd in connect create disconnect inspect ls rm
+	do
+		echo -e "## $cmd\n"
+		../shed-network $cmd -h | clean
+		echo
+	done
+    
+} > reference-network.md
+
 if (( $# == 0 ))
 then
 	build_hub
 	build_image
 	build_container
 	build_volume
+	build_network
 else
 	for r; do build_$r; done
 fi

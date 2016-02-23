@@ -62,11 +62,11 @@ function main {
     shift $((OPTIND-1)); OPTIND=1
 
     case $1 in
-        connect) COMMAND='connect' ;;
-        create) COMMAND='create' ;;
-        disconnect) COMMAND='disconnect' ;;
-        inspect) COMMAND='inspect' ;;
-        ls) COMMAND='ls' ;;
+        co|con|conn|conne|connec|connect) COMMAND='connect' ;;
+        cre|crea|creat|create) COMMAND='create' ;;
+        dis|disc|disco|discon|disconn|disconne|disconnec|disconnect) COMMAND='disconnect' ;;
+        ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
+        l|ls) COMMAND='ls' ;;
         rm) COMMAND='rm' ;;
         *) usage command "$1" ;;
     esac
@@ -117,7 +117,7 @@ function help_command {
 # Commands
 ########################################################################
 
-# network connect...
+# network connect [OPTIONS] NETWORK CONTAINER
 function network_connect {
     help_command 'network connect'@connect "$@"
    (( $# > 1 )) || help_command 'network connect'@connect -h
@@ -125,7 +125,7 @@ function network_connect {
     docker network connect "$@"
 }
 
-# network create...
+# network create [OPTIONS] NETWORK-NAME
 function network_create {
     help_command 'network create'@create "$@"
    (( $# > 0 )) || help_command 'network create'@create -h
@@ -133,7 +133,7 @@ function network_create {
     docker network create "$@"
 }
 
-# network disconnect...
+# network disconnect [OPTIONS] NETWORK CONTAINER
 function network_disconnect {
     help_command 'network disconnect'@disconnect "$@"
    (( $# > 1 )) || help_command 'network disconnect'@disconnect -h
@@ -141,7 +141,7 @@ function network_disconnect {
     docker network create "$@"
 }
 
-# network inspect ...
+# network inspect [OPTIONS] NETWORK [NETWORK...]
 function network_inspect {
     help_command 'network inspect'@inspect "$@"
    (( $# > 0 )) || help_command 'network inspect'@inspect -h
@@ -149,14 +149,14 @@ function network_inspect {
     docker network inspect "$@"
 }
 
-# network ls...
+# network ls [OPTIONS]
 function network_ls {
     help_command 'network ls'@ls "$@"
 
     docker network ls "$@"
 }
 
-# network rm...
+# network rm [OPTIONS] NETWORK [NETWORK...]
 function network_rm {
     help_command 'network rm'@rm "$@"
    (( $# > 0 )) || help_command 'network rm'@rm -h
