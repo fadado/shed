@@ -48,7 +48,7 @@ build_container() {
 	done
     
 	echo -e '# Runtime commands\n'
-	for cmd in attach exec kill logs pause restart run ship start stats stop top unpause wait
+	for cmd in attach exec kill logs pause restart run ship start stats stop top update unpause wait
 	do
 		echo -e "## $cmd\n"
 		../shed-container $cmd -h | clean

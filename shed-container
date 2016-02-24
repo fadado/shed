@@ -221,6 +221,7 @@ function main {
         s|st|sta|star|start) COMMAND='start' ;;
         t|to|top) COMMAND='top' ;;
         u|un|unp|unpa|unpau|unpaus|unpause) COMMAND='unpause' ;;
+        up|upd|upda|updat|update) COMMAND='update' ;;
         w|wa|wai|wait|wait) COMMAND='wait' ;;
         *) usage command "$1" ;;
     esac
@@ -355,6 +356,8 @@ Runtime commands:
         Lookup the running processes of a container
     unpause CONTAINER [CONTAINER...]
         Unpause a paused container
+    update [OPTIONS] CONTAINER [CONTAINER...]
+        Update resources of one or more containers
     wait [OPTIONS] CONTAINER [CONTAINER...]
         Block until a container stops, then print its exit code
 
@@ -419,6 +422,13 @@ declare -r -A EXTENSIONS=(
   $SELF --latest stop [OPTIONS] [CONTAINER...]"
     ['top']="
   $SELF --latest top [ps OPTIONS]"
+    ['update']="
+  $SELF update
+  $SELF update [OPTIONS]
+  $SELF --all update [OPTIONS]
+  $SELF --propagate update [OPTIONS] CONTAINER
+  $SELF --latest --propagate update [OPTIONS]
+  $SELF --latest update [OPTIONS] [CONTAINER...]"
     ['unpause']="
   $SELF unpause
   $SELF --all unpause
@@ -949,6 +959,7 @@ function container_rm { cmd_agpl rm pre stopped "$@"; }
 function container_start { cmd_agpl start post stopped "$@"; }
 function container_stop { cmd_agpl stop pre running "$@"; }
 function container_wait { cmd_agpl wait post running "$@"; }
+function container_update { cmd_agpl update pre running "$@"; }
 
 # ship [OPTIONS]
 function container_ship {

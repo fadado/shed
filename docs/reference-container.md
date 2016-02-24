@@ -62,6 +62,8 @@
             Lookup the running processes of a container
         unpause CONTAINER [CONTAINER...]
             Unpause a paused container
+        update [OPTIONS] CONTAINER [CONTAINER...]
+            Update resources of one or more containers
         wait [OPTIONS] CONTAINER [CONTAINER...]
             Block until a container stops, then print its exit code
     
@@ -525,6 +527,34 @@
     Extended usage:
     
       shed-container --latest top [ps OPTIONS]
+    
+
+## update
+
+    Usage:	shed-container update [OPTIONS] CONTAINER [CONTAINER...]
+    
+    Update resources of one or more containers
+    
+      --blkio-weight          Block IO (relative weight), between 10 and 1000
+      --cpu-shares            CPU shares (relative weight)
+      --cpu-period            Limit CPU CFS (Completely Fair Scheduler) period
+      --cpu-quota             Limit CPU CFS (Completely Fair Scheduler) quota
+      --cpuset-cpus           CPUs in which to allow execution (0-3, 0,1)
+      --cpuset-mems           MEMs in which to allow execution (0-3, 0,1)
+      --help                  Print usage
+      --kernel-memory         Kernel memory limit
+      -m, --memory            Memory limit
+      --memory-reservation    Memory soft limit
+      --memory-swap           Swap limit equal to memory plus swap: '-1' to enable unlimited swap
+    
+    Extended usage:
+    
+      shed-container update
+      shed-container update [OPTIONS]
+      shed-container --all update [OPTIONS]
+      shed-container --propagate update [OPTIONS] CONTAINER
+      shed-container --latest --propagate update [OPTIONS]
+      shed-container --latest update [OPTIONS] [CONTAINER...]
     
 
 ## unpause
