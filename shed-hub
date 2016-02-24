@@ -177,7 +177,7 @@ function help_command {
 
 # build [OPTIONS]
 function hub_build {
-    local opt nocache quiet
+    local opt quiet
     local -i remove=0
 
     while getopts :hrq-: opt; do
@@ -186,9 +186,6 @@ function hub_build {
             q) quiet='--quiet' ;;
             h) help_build ;;    
             -)  case $OPTARG in
-                    no-cache) nocache='--no-cache=true' ;;
-                    no-cache=true) nocache='--no-cache=true' ;;
-                    no-cache=false) nocache='--no-cache=false' ;;
                     remove) remove=1 ;;
                     remove=true) remove=1 ;;
                     remove=false) remove=0 ;;
@@ -208,18 +205,20 @@ function hub_build {
     [[ -e ./Shedfile ]] || fatal 'No Shedfile found for project in .'
 
     # pull images
-    local prefix=$TAGS_PREFIX image tag='latest'
+    local image
     for image in ${IMAGES[@]}
     do
         docker pull $image
     done
 
     # build images
+    local prefix=$TAGS_PREFIX image tag='latest'
     for image in ${BUILDS[@]}
     do
+        # Parse image tag: [REGISTRYHOST/][USERNAME/]NAME[:TAG]
         local ifs=$IFS
-        if [[ $image == */* ]]; then    # has tag with /
-            # [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+        # if has tag with / ([REGISTRYHOST/][USERNAME/]NAME[:TAG])
+        if [[ $image == */* ]]; then
             IFS='/'
             set -- $image   # split on '/'
             IFS=$ifs    # restore
@@ -233,8 +232,8 @@ function hub_build {
                 fatal 'Too many / in image tag'
             fi
         fi
-        if [[ $image == *:* ]]; then    # has tag with :
-            # NAME[:TAG]
+        # if has tag with : (NAME[:TAG])
+        if [[ $image == *:* ]]; then
             IFS=':'
             set -- $image   # split on ':'
             IFS=$ifs    # restore
@@ -242,15 +241,32 @@ function hub_build {
             image=$1
             tag=$2
         fi
-        [[ -d $image ]] || fatal "Directory $image does not exists"
-        local -l name
-        if [[ $image == . ]]; then
-            name=${PWD##*/}
-        else
-            name=$image
+        # alternative name for dockerfile?
+        local FILE=$image/Dockerfile    # default
+        if [[ $image == *'#'* ]]; then
+            IFS='#'
+            set -- $image   # split on '#'
+            IFS=$ifs    # restore
+            (( $# == 2 )) || fatal 'Too many # in image tag'
+            image=$1
+            FILE=$image/$2
         fi
+        # now $image must be a directory name, a path
+        [[ -d $image ]] || fatal "Directory $image does not exists"
+        [[ -f $FILE ]] || fatal "Dockerfile $FILE does not exists"
+        # set final image name, prefixed if necessary
+        local -l name
+        if [[ $image == . ]]; then name=${PWD##*/}; else name=$image; fi
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
-        docker build $quiet $nocache --tag ${prefix}/${name}:${tag} $image
+
+        # build image
+        # TODO: define more arguments to build
+        docker build \
+            $quiet \
+            --file $FILE \
+            --tag ${prefix}/${name}:${tag} \
+            $image
+        # tag latest
         if [[ $tag != 'latest' ]]; then
             if docker history ${prefix}/${name}:latest &>/dev/null; then
                 # latest exists
@@ -264,13 +280,16 @@ function hub_build {
     local container
     for container in ${CONTAINERS[@]}
     do
+        # set final container name, prefixed if necessary
         local -l name=$container
         [[ -e ${container}.shed ]] || fatal "Container Shedfile ${container}.shed not found"
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
+        # remove container if requested
         if (( remove )); then
             docker stop $name &>/dev/null
             docker rm $name &>/dev/null
         fi
+        # build container
         $(dirname $0)/shed-container build --name=$name ${container}.shed
     done
 }
