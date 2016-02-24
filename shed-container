@@ -506,10 +506,10 @@ function container_build {
     local       BLKIO_WEIGHT
     local       CGROUP_PARENT
     local       CIDFILE
-    local       CPU_PERIOD
-    local       CPU_QUOTA
     local       CPUSET_CPUS
     local       CPUSET_MEMS
+    local       CPU_PERIOD
+    local       CPU_QUOTA
     local       CPU_SHARES
     local       DISABLE_CONTENT_TRUST
     local       ENTRYPOINT
@@ -574,10 +574,10 @@ function container_build {
     [[ -n $BLKIO_WEIGHT ]] &&   BLKIO_WEIGHT="--blkio-weight=$BLKIO_WEIGHT"
     [[ -n $CGROUP_PARENT ]] &&  CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
     [[ -n $CIDFILE ]] &&        CIDFILE="--cidfile=$CIDFILE"
-    [[ -n $CPU_PERIOD ]] &&     CPU_PERIOD="--cpu-period=$CPU_PERIOD"
-    [[ -n $CPU_QUOTA ]] &&      CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
     [[ -n $CPUSET_CPUS ]] &&    CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS"
     [[ -n $CPUSET_MEMS ]] &&    CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS"
+    [[ -n $CPU_PERIOD ]] &&     CPU_PERIOD="--cpu-period=$CPU_PERIOD"
+    [[ -n $CPU_QUOTA ]] &&      CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
     [[ -n $CPU_SHARES ]] &&     CPU_SHARES="--cpu-shares=$CPU_SHARES"
     [[ -n $DISABLE_CONTENT_TRUST ]] && DISABLE_CONTENT_TRUST="--disable-content-trust=$DISABLE_CONTENT_TRUST"
     [[ -n $ENTRYPOINT ]] &&     ENTRYPOINT="--entrypoint=$ENTRYPOINT"
@@ -635,10 +635,10 @@ function container_build {
         $BLKIO_WEIGHT \
         $CGROUP_PARENT \
         $CIDFILE \
-        $CPU_PERIOD \
-        $CPU_QUOTA \
         $CPUSET_CPUS \
         $CPUSET_MEMS \
+        $CPU_PERIOD \
+        $CPU_QUOTA \
         $CPU_SHARES \
         $DISABLE_CONTENT_TRUST \
         $ENTRYPOINT \

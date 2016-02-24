@@ -1,0 +1,68 @@
+# Sample image Shedfile
+
+########################################################################
+# Options for `docker build`
+########################################################################
+
+# --build-arg=[]
+BUILD_ARG=()
+
+# --cgroup-parent=CGROUP-PARENT
+CGROUP_PARENT=''
+
+# --cpuset-cpus=CPUSET-CPUS
+CPUSET_CPUS=''
+
+# --cpuset-mems=CPUSET-MEMS
+CPUSET_MEMS=''
+
+# --cpu-period=0
+CPU_PERIOD=0
+
+# --cpu-quota=0
+CPU_QUOTA=0
+
+# --cpu-shares=0
+CPU_SHARES=0
+
+# --disable-content-trust=true
+DISABLE_CONTENT_TRUST='true'
+
+# --force-rm=true|false
+FORCE_RM='false'
+
+# --isolation="default"
+ISOLATION=''
+
+# -m, --memory=""
+MEMORY=''
+
+# --memory-swap=
+MEMORY_SWAP=''
+
+# --no-cache=true|false
+NO_CACHE='false'
+
+# --pull=true|false
+PULL='false'
+
+# -q, --quiet=true|false
+QUIET='false'
+
+# --rm=true|false
+RM='true'
+
+# --shm-size=SHM-SIZE
+SHM_SIZE=''
+
+# -t, --tag=""
+TAG=()
+
+# --ulimit=[]
+ULIMIT=()
+
+# Not definable in this shedfile:
+# -f, --file
+# --help
+
+# vim:syntax=sh:ai:sw=8:ts=8

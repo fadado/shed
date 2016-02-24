@@ -20,6 +20,8 @@ Templates for Shedfiles:
 
 * [`container.shed`](container.shed): container Shedfile example. Works also as a reference for all available parameters.
 
+* [`dockerfile.shed`](dockerfile.shed): dockerfile Shedfile example. Works also as a reference for all available parameters.
+
 Slides:
 
 * [`slides-es.html`](slides-es.html): we intend to build a  complete slide presentation for _Shed_. _Work i progress_&hellip;

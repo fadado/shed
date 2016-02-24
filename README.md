@@ -21,6 +21,9 @@ For every project managed with _Shed_ you must write two configuration files,
 one for the whole project named `Shedfile` and one for each container named like
 the container and with the _shed_ extension, for example `container.shed`.
 
+Also, if you want to configure the implicit call to `docker build` made by `shed-hub`,
+you  can define a file called `Dockerfile.shed` for each image to build.
+
 These files are _Bash_ files, and all the power of _Bash_ is available. The files
 define parameters, with string, list o dictionary values. 
 
@@ -36,7 +39,8 @@ This is a project Shedfile example:
 
     # images to build, with names in the form [REGISTRYHOST/][USERNAME/]NAME[:TAG]
     # where NAME must be '.' or an immediate subdirectory and the optional prefix
-    # defaults to the USERNAME 'shed'
+    # defaults to the USERNAME 'shed'. You can define an alternative Dockerfile name 
+    # using a NAME with the form name#dockerfile.
     BUILDS=(
         '.'
     )
@@ -71,9 +75,31 @@ This is a container Shedfile example:
     # Allocate a pseudo-TTY
     TTY='true'
 
+This is a dockerfile Shedfile example:
+
+    # Names and values of a buildarg(s)
+    BUILD_ARG=( 'user=admin' )
+
+    # Always remove intermediate containers
+    FORCE_RM='true'
+
+    # Do not use cache when building the image
+    NO_CACHE='true'
+
+    # Always  attempt to pull a newer version of the image
+    PULL='true'
+
+    # Always  attempt to pull a newer version of the image
+    QUIET='true'
+
 All the parameters in the container Shedfile are forwarded to the `docker create` command,
 and the names are the same (but adapted to the _Bash_ syntax). The file
 [docs/container.shed](docs/container.shed) contains all available parameters
+with default values if defined.
+
+All the parameters in the dockerfile Shedfile are forwarded to the `docker build` command,
+and the names are the same (but adapted to the _Bash_ syntax). The file
+[docs/dockerfile.shed](docs/dockerfile.shed) contains all available parameters
 with default values if defined.
 
 ## Configuration
