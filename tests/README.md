@@ -11,6 +11,8 @@ Example tests grouped in this directory:
 
 1. [**hello**](./hello): implements the classical "Hello, world!" test.
 
+1. [**htop**](./htop): run `htop` using the Alpine distribution.
+
 1. [**journal**](./journal): implements a container using the journald logging driver.
 
 1. [**postgres**](./postgres): implements five layered images and three independent

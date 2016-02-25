@@ -27,6 +27,8 @@ you  can define a file called `Dockerfile.shed` for each image to build.
 These files are _Bash_ files, and all the power of _Bash_ is available. The files
 define parameters, with string, list o dictionary values. 
 
+### Project shedfile
+
 This is a project Shedfile example:
 
     # prefixed to image names if defined
@@ -50,6 +52,8 @@ This is a project Shedfile example:
         'echo'
         'receiver'
     )
+
+### Container shedfile
 
 This is a container Shedfile example:
 
@@ -75,6 +79,13 @@ This is a container Shedfile example:
     # Allocate a pseudo-TTY
     TTY='true'
 
+All the parameters in the container Shedfile are forwarded to the `docker create` command,
+and the names are the same (but adapted to the _Bash_ syntax). The file
+[docs/container.shed](docs/container.shed) contains all available parameters
+with default values if defined.
+
+### Dockerfile shedfile
+
 This is a dockerfile Shedfile example:
 
     # Names and values of a buildarg(s)
@@ -86,10 +97,11 @@ This is a dockerfile Shedfile example:
     # Suppress the build output and print image ID on success
     QUIET='true'
 
-All the parameters in the container Shedfile are forwarded to the `docker create` command,
-and the names are the same (but adapted to the _Bash_ syntax). The file
-[docs/container.shed](docs/container.shed) contains all available parameters
-with default values if defined.
+    # Additional tags
+    TAG=(
+      'mary/docker-whale:1.3'
+      'private.com/docker-whale:1.3'
+    )
 
 All the parameters in the dockerfile Shedfile are forwarded to the `docker build` command,
 and the names are the same (but adapted to the _Bash_ syntax). The file

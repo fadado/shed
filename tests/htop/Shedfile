@@ -1,0 +1,11 @@
+########################################################################
+# Sample project Shedfile
+########################################################################
+
+# images to pull
+IMAGES=( 'alpine:latest' )
+
+# images to build
+BUILDS=( '.' )
+
+# vim:syntax=sh:ai:sw=4:ts=4
