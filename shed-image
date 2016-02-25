@@ -109,16 +109,16 @@ Commands:
         Create a new image from a container's changes
     history [OPTIONS] IMAGE
         Show the history of an image
-    images [OPTIONS] [REPOSITORY]
+    images [OPTIONS] [REPOSITORY[:TAG]]
         List images
     import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]
-        Create an empty filesystem image from the contents of a tarbal
+        Import the contents from a tarball to create a filesystem image
     load [OPTIONS]
-        Load an image from a tar archive
+        Load an image from a tar archive or STDIN
     rm [OPTIONS] IMAGE [IMAGE...]
         Remove one or more images
     save [OPTIONS] IMAGE [IMAGE...]
-        Save an image to a tar archive
+        Save an image(s) to a tar archive
     tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]
         Tag an image into a repository
 
@@ -171,18 +171,11 @@ function image_history {
     docker history "$@" 2>&1 | pager
 }
 
-# images [OPTIONS] [REPOSITORY]
+# images [OPTIONS] [REPOSITORY[:TAG]]
 function image_images {
     help_command images "$@"
 
-    docker images "$@" \
-        | sed -e '1s/VIRTUAL/V./' -e 's/ \+$//' -e 's/  \+/\t/g' \
-        | { local line
-            read -r line
-            echo "$line"
-            sort -
-          } \
-        | column --table --separator $'\t'
+    docker images "$@"
 }
 
 # import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]

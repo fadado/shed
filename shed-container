@@ -67,7 +67,17 @@ fi
 declare -ri RUNNING=0 PAUSED=1 STOPPED=2 UNKNOWN=3
 
 function created {
-    docker ps --all \
+    docker ps --filter status=created \
+        | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function dead {
+    docker ps --filter status=dead \
+        | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
+function exited {
+    docker ps --filter status=exited \
         | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
 }
 
@@ -81,6 +91,11 @@ function paused {
         | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
 }
 
+function restarting {
+    docker ps --filter status=restarting \
+        | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
+}
+
 function running {
     docker ps --filter status=running \
         | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
@@ -88,11 +103,6 @@ function running {
 
 function stopped {
     docker ps --all --filter status=exited --filter status=created \
-        | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
-}
-
-function restarting {
-    docker ps --filter status=restarting \
         | sed -e '1d' -e 's/\s\+$//' -e 's/^.*\s//'
 }
 
@@ -307,19 +317,19 @@ Options:
 General commands:
     build [OPTIONS] FILE
         Build a container from a Shedfile
-    cp [OPTIONS] CONTAINER:PATH LOCALPATH | -
-       [OPTIONS] LOCALPATH | - CONTAINER:PATH
-       Copy files/folders between a container and the host
+    cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
+       [OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
+       Copy files/folders between a container and the local filesystem
     create [OPTIONS] IMAGE [COMMAND] [ARG...]
-        WARNING: replaced by 'build'
+        Create a new container
     diff [OPTIONS] CONTAINER
         Inspect changes on a container's filesystem
     export [OPTIONS] CONTAINER
-        Export the contents of a filesystem as a tar archive to STDOUT
+        Export a container's filesystem as a tar archive
     links [OPTIONS] CONTAINER
         Show direct links of a container
     port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
-        Lookup the public-facing port that is NAT-ed to PRIVATE_PORT
+        List port mappings or a specific mapping for the CONTAINER
     ps [OPTIONS]
         List containers
     rename [OPTIONS] OLD_NAME NEW_NAME
@@ -341,21 +351,21 @@ Runtime commands:
     pause [OPTIONS] CONTAINER [CONTAINER...]
         Pause all processes within a container
     restart [OPTIONS] CONTAINER [CONTAINER...]
-        Restart a running container
+        Restart a container
     run [OPTIONS] IMAGE [COMMAND] [ARG...]
-        WARNING: recommended 'start' after 'build'
+        Run a command in a new container
     ship [OPTIONS]
         Start and attach to containers
     start [OPTIONS] CONTAINER [CONTAINER...]
-        Start a stopped container
-    stats [OPTIONS] CONTAINER [CONTAINER...]
+        Start one or more stopped containers
+    stats [OPTIONS] [CONTAINER...]
         Display a live stream of one or more containers' resource usage statistics
     stop [OPTIONS] CONTAINER [CONTAINER...]
         Stop a running container
-    top CONTAINER [ps OPTIONS]
-        Lookup the running processes of a container
-    unpause CONTAINER [CONTAINER...]
-        Unpause a paused container
+    top [OPTIONS] CONTAINER [ps OPTIONS]
+        Display the running processes of a container
+    unpause [OPTIONS] CONTAINER [CONTAINER...]
+        Unpause all processes within a container
     update [OPTIONS] CONTAINER [CONTAINER...]
         Update resources of one or more containers
     wait [OPTIONS] CONTAINER [CONTAINER...]
@@ -534,21 +544,28 @@ function container_build {
     local       NAME
     local       NET
     local       OOM_KILL_DISABLE
+    local       OOM_SCORE_ADJ
     local       PID
     local       PRIVILEGED
     local       PUBLISH_ALL
     local       READ_ONLY
     local       RESTART
+    local       SHM_SIZE
     local       TTY
     local       USER
     local       UTS
     local       VOLUME_DRIVER
     local       WORKDIR
     local   -a  ADD_HOST
+    local   -a  BLKIO_WEIGHT_DEVICE
     local   -a  ATTACH
     local   -a  CAP_ADD
     local   -a  CAP_DROP
     local   -a  DEVICE
+    local   -a  DEVICE_READ_BPS
+    local   -a  DEVICE_READ_IOPS
+    local   -a  DEVICE_WRITE_BPS
+    local   -a  DEVICE_WRITE_IOPS
     local   -a  DNS
     local   -a  DNS_SEARCH
     local   -a  ENV_FILE
@@ -601,11 +618,13 @@ function container_build {
     [[ -n $MEMORY_SWAPPINESS ]] && MEMORY_SWAPPINESS="--memory-swappiness=$MEMORY_SWAPPINESS"
     [[ -n $NET ]] &&            NET="--net=$NET"
     [[ -n $OOM_KILL_DISABLE ]] && OOM_KILL_DISABLE="--oom-kill-disable=$OOM_KILL_DISABLE"
+    [[ -n $OOM_SCORE_ADJ ]] && OOM_SCORE_ADJ="--oom-score-adj=$OOM_SCORE_ADJ"
     [[ -n $PID ]] &&            PID="--pid=$PID"
     [[ -n $PRIVILEGED ]] &&     PRIVILEGED="--privileged=$PRIVILEGED"
     [[ -n $PUBLISH_ALL ]] &&    PUBLISH_ALL="--publish-all=$PUBLISH_ALL"
     [[ -n $READ_ONLY ]] &&      READ_ONLY="--read-only=$READ_ONLY"
     [[ -n $RESTART ]] &&        RESTART="--restart=$RESTART"
+    [[ -n $SHM_SIZE ]] &&       SHM_SIZE="--shm-size=$SHM_SIZE"
     [[ -n $TTY ]] &&            TTY="--tty=$TTY"
     [[ -n $USER ]] &&           USER="--user=$USER"
     [[ -n $UTS ]] &&            UTS="--uts=$UTS"
@@ -615,9 +634,14 @@ function container_build {
     local k; local -i i
     for i in ${!ADD_HOST[@]}; do    ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
     for i in ${!ATTACH[@]}; do      DEVICE[i]="--attach=${ATTACH[i]}"; done
+    for i in ${!BLKIO_WEIGHT_DEVICE[@]}; do BLKIO_WEIGHT_DEVICE[i]="--blkio-weight-device=${BLKIO_WEIGHT_DEVICE[i]}"; done
     for i in ${!CAP_ADD[@]}; do     CAP_ADD[i]="--cap-add=${CAP_ADD[i]}"; done
     for i in ${!CAP_DROP[@]}; do    CAP_DROP[i]="--cap-drop=${CAP_DROP[i]}"; done
     for i in ${!DEVICE[@]}; do      DEVICE[i]="--device=${DEVICE[i]}"; done
+    for i in ${!DEVICE_READ_BPS[@]}; do DEVICE_READ_BPS[i]="--device-read-bps=${DEVICE_READ_BPS[i]}"; done
+    for i in ${!DEVICE_READ_IOPS[@]}; do DEVICE_READ_IOPS[i]="--device-read-iops=${DEVICE_READ_IOPS[i]}"; done
+    for i in ${!DEVICE_WRITE_BPS[@]}; do DEVICE_WRITE_BPS[i]="--device-write-bps=${DEVICE_WRITE_BPS[i]}"; done
+    for i in ${!DEVICE_WRITE_IOPS[@]}; do DEVICE_WRITE_IOPS[i]="--device-write-iops=${DEVICE_WRITE_IOPS[i]}"; done
     for i in ${!DNS[@]}; do         DNS[i]="--dns=${DNS[i]}"; done
     for i in ${!DNS_SEARCH[@]}; do  DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
     for i in ${!ENV_FILE[@]}; do    ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
@@ -663,11 +687,13 @@ function container_build {
         $NAME \
         $NET \
         $OOM_KILL_DISABLE \
+        $OOM_SCORE_ADJ \
         $PID \
         $PRIVILEGED \
         $PUBLISH_ALL \
         $READ_ONLY \
         $RESTART \
+        $SHM_SIZE \
         $TTY \
         $USER \
         $UTS \
@@ -675,9 +701,14 @@ function container_build {
         $WORKDIR \
         ${ADD_HOST[@]} \
         ${ATTACH[@]} \
+        ${BLKIO_WEIGHT_DEVICE[@]} \
         ${CAP_ADD[@]} \
         ${CAP_DROP[@]} \
         ${DEVICE[@]} \
+        ${DEVICE_READ_BPS[@]} \
+        ${DEVICE_READ_IOPS[@]} \
+        ${DEVICE_WRITE_BPS[@]} \
+        ${DEVICE_WRITE_IOPS[@]} \
         ${DNS[@]} \
         ${DNS_SEARCH[@]} \
         ${ENV_FILE[@]} \
@@ -711,8 +742,8 @@ EOF
     exit 1
 }
 
-# cp [OPTIONS] CONTAINER:PATH LOCALPATH | -
-#    [OPTIONS] LOCALPATH | - CONTAINER:PATH
+# cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
+#    [OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
 function container_cp {
     help_command cp "$@"
     (( $# == 2 )) || help_command cp -h
@@ -897,8 +928,7 @@ function container_run {
     docker run "$@"
 }
 
-#
-# stats [OPTIONS] CONTAINER [CONTAINER...]
+# stats [OPTIONS] [CONTAINER...]
 function container_stats {
     help_command stats "$@"
     (( $# > 0 )) || help_command stats -h
@@ -906,7 +936,7 @@ function container_stats {
     docker stats "$@"
 }
 
-# top CONTAINER [ps OPTIONS]
+# top [OPTIONS] CONTAINER [ps OPTIONS]
 # -l top [ps OPTIONS]
 function container_top {
     help_command top "$@"

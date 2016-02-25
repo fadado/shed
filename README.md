@@ -83,13 +83,7 @@ This is a dockerfile Shedfile example:
     # Always remove intermediate containers
     FORCE_RM='true'
 
-    # Do not use cache when building the image
-    NO_CACHE='true'
-
-    # Always  attempt to pull a newer version of the image
-    PULL='true'
-
-    # Always  attempt to pull a newer version of the image
+    # Suppress the build output and print image ID on success
     QUIET='true'
 
 All the parameters in the container Shedfile are forwarded to the `docker create` command,

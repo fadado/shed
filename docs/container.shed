@@ -24,6 +24,9 @@ ATTACH=()
 # --blkio-weight=0
 BLKIO_WEIGHT=0
 
+# --blkio-weight-device=[]
+BLKIO_WEIGHT_DEVICE=()
+
 # --cap-add=[]
 CAP_ADD=()
 
@@ -53,6 +56,18 @@ CPUSET_MEMS=''
 
 # --device=[]
 DEVICE=()
+
+# --device-read-bps=[]
+DEVICE_READ_BPS=()
+
+# --device-read-iops=[]
+DEVICE_READ_IOPS=()
+
+# --device-write-bps=[]
+DEVICE_WRITE_BPS=()
+
+# --device-write-iops=[]
+DEVICE_WRITE_IOPS=()
 
 # --disable-content-trust=true
 DISABLE_CONTENT_TRUST='true'
@@ -122,6 +137,9 @@ MEMORY_SWAPPINESS=-1
 # --net=default
 NET='bridge'
 
+# --oom-score-adj=""
+OOM_SCORE_ADJ=''
+
 # --oom-kill-disable=false
 OOM_KILL_DISABLE='false'
 
@@ -145,6 +163,9 @@ RESTART='no'
 
 # --security-opt=[]
 SECURITY_OPT=()
+
+# --shm-size=""
+SHM_SIZE=''
 
 # -t, --tty=false
 TTY='false'
