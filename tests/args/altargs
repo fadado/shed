@@ -1,0 +1,13 @@
+########################################################################
+# Dockerfile with BUILD_ARG
+########################################################################
+
+FROM alpine:latest
+
+ARG MSG="Hello world"
+
+RUN /bin/echo ${MSG}
+
+CMD ["/bin/echo", "Hello,", "world!"]
+
+# vim:syntax=dockerfile:ai:sw=4:ts=4

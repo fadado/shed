@@ -1,0 +1,7 @@
+# Options for `docker build`
+
+BUILD_ARG=(
+	MSG="That's all Folks!"
+)
+
+# vim:syntax=sh:ai:sw=8:ts=8

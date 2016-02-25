@@ -1,0 +1,19 @@
+########################################################################
+# Sample project Shedfile
+########################################################################
+
+# prefixed to container and image names
+PROJECT=AA
+
+# images to pull
+IMAGES=( 'alpine:latest' )
+
+# images to build
+# when using alternative dockerfile, the dockerfile name will
+# be the image name (in this example prefixed with ${PROJECT}_)
+BUILDS=(
+	'.'
+	'.#altargs'
+)
+
+# vim:syntax=sh:ai:sw=4:ts=4

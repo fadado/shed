@@ -245,13 +245,16 @@ function hub_build {
         # alternative name for dockerfile?
         local FILE=$image/Dockerfile    # default
         # if tag has NAME with a # (NAME#DOCKERFILE)
+        local alternate
         if [[ $image == *'#'* ]]; then
             IFS='#'
             set -- $image   # split on '#'
             IFS=$ifs    # restore
             (( $# == 2 )) || fatal 'Too many # in image tag'
+            alternate=1
             image=$1
-            FILE=$image/$2
+            alternate=$2
+            FILE=$image/$alternate
         fi
         # now $image must be a directory name, a path
         [[ -d $image ]] || fatal "Directory $image does not exists"
@@ -259,6 +262,7 @@ function hub_build {
         # set final image name, prefixed if necessary
         local -l name
         if [[ $image == . ]]; then name=${PWD##*/}; else name=$image; fi
+        [[ -n $alternate ]] && name=${alternate}
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
 
         # define more arguments to build
@@ -331,9 +335,9 @@ function hub_build {
             $QUIET \
             $RM \
             $SHM_SIZE \
-            ${BUILD_ARG[@]} \
-            ${TAG[@]} \
-            ${ULIMIT[@]} \
+            "${BUILD_ARG[@]}" \
+            "${TAG[@]}" \
+            "${ULIMIT[@]}" \
             $image
 
         # tag latest

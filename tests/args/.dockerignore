@@ -1,0 +1,8 @@
+.dockerignore
+.gitignore
+README.md
+Makefile
+Shedfile
+*.shed
+build-err.log
+build.log
