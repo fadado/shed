@@ -307,6 +307,8 @@ function help_main {
 Usage: $SELF [-h | --help | -V]
        $SELF [OPTIONS] COMMAND [ARGS]
 
+Manage Docker containers
+
 Options:
     -a, --all       Apply command to all containers
     -h, --help      Help information

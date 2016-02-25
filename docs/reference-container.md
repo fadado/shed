@@ -3,6 +3,8 @@
     Usage: shed-container [-h | --help | -V]
            shed-container [OPTIONS] COMMAND [ARGS]
     
+    Manage Docker containers
+    
     Options:
         -a, --all       Apply command to all containers
         -h, --help      Help information
@@ -13,19 +15,19 @@
     General commands:
         build [OPTIONS] FILE
             Build a container from a Shedfile
-        cp [OPTIONS] CONTAINER:PATH LOCALPATH | -
-           [OPTIONS] LOCALPATH | - CONTAINER:PATH
-           Copy files/folders between a container and the host
+        cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
+           [OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
+           Copy files/folders between a container and the local filesystem
         create [OPTIONS] IMAGE [COMMAND] [ARG...]
-            WARNING: replaced by 'build'
+            Create a new container
         diff [OPTIONS] CONTAINER
             Inspect changes on a container's filesystem
         export [OPTIONS] CONTAINER
-            Export the contents of a filesystem as a tar archive to STDOUT
+            Export a container's filesystem as a tar archive
         links [OPTIONS] CONTAINER
             Show direct links of a container
         port [OPTIONS] CONTAINER [PRIVATE_PORT[/PROTO]]
-            Lookup the public-facing port that is NAT-ed to PRIVATE_PORT
+            List port mappings or a specific mapping for the CONTAINER
         ps [OPTIONS]
             List containers
         rename [OPTIONS] OLD_NAME NEW_NAME
@@ -47,21 +49,21 @@
         pause [OPTIONS] CONTAINER [CONTAINER...]
             Pause all processes within a container
         restart [OPTIONS] CONTAINER [CONTAINER...]
-            Restart a running container
+            Restart a container
         run [OPTIONS] IMAGE [COMMAND] [ARG...]
-            WARNING: recommended 'start' after 'build'
+            Run a command in a new container
         ship [OPTIONS]
             Start and attach to containers
         start [OPTIONS] CONTAINER [CONTAINER...]
-            Start a stopped container
-        stats [OPTIONS] CONTAINER [CONTAINER...]
+            Start one or more stopped containers
+        stats [OPTIONS] [CONTAINER...]
             Display a live stream of one or more containers' resource usage statistics
         stop [OPTIONS] CONTAINER [CONTAINER...]
             Stop a running container
-        top CONTAINER [ps OPTIONS]
-            Lookup the running processes of a container
-        unpause CONTAINER [CONTAINER...]
-            Unpause a paused container
+        top [OPTIONS] CONTAINER [ps OPTIONS]
+            Display the running processes of a container
+        unpause [OPTIONS] CONTAINER [CONTAINER...]
+            Unpause all processes within a container
         update [OPTIONS] CONTAINER [CONTAINER...]
             Update resources of one or more containers
         wait [OPTIONS] CONTAINER [CONTAINER...]

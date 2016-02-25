@@ -65,6 +65,7 @@ function main {
         cre|crea|creat|create) COMMAND='create' ;;
         ins|insp|inspe|inspec|inspect) COMMAND='inspect' ;;
         l|ls) COMMAND='ls' ;;
+        p|pu|pur|purg|purge) COMMAND='purge' ;;
         rm) COMMAND='rm' ;;
         *) usage command "$1" ;;
     esac
@@ -83,15 +84,36 @@ function usage {
 Unknown $1: $2
 
 Usage: $SELF [-h | --help | -V]
-       $SELF COMMAND [ARGS]
+       $SELF [OPTIONS] [COMMAND]
 EOF
     exit 1
 }
 
 function help_main {
-    docker volume --help 2>&1 \
-        | sed -e '1d' -e "s/docker\s\+volume/$SELF/g" \
-        | pager
+    cat <<EOF | pager
+Usage: $SELF [-h | --help | -V]
+       $SELF [OPTIONS] [COMMAND]
+
+Manage Docker volumes
+
+Options:
+    -h, --help  Help information
+    -V          Show version information
+
+Commands:
+    create [OPTIONS]
+        Create a volume
+    inspect [OPTIONS] VOLUME [VOLUME...]
+        Return low-level information on a volume
+    ls ls [OPTIONS]
+        List volumes
+    purge [OPTIONS]
+        Remove dangling volumes
+    rm [OPTIONS] VOLUME [VOLUME...]
+        Remove a volume
+
+Run '$SELF COMMAND --help' for more information on a command.
+EOF
     exit 1
 }
 
@@ -135,6 +157,45 @@ function volume_ls {
     help_command 'volume ls'@ls "$@"
 
     docker volume ls "$@"
+}
+
+# volume purge [OPTIONS]
+function volume_purge {
+	local opt
+    local -i dry=0
+
+	while getopts :d-: opt; do
+		case $opt in
+			d) dry=1 ;;
+			-)	case $OPTARG in
+                    dry) dry=1 ;;
+					help) help_purge ;;
+					*) help_purge ;;
+				esac
+				;;
+			?) help_purge ;;
+		esac
+	done
+
+	#shift $((OPTIND-1)); OPTIND=1
+
+    if (( dry )); then
+        docker volume ls --quiet --filter dangling=true
+    else
+        local VOL=$(docker volume ls --quiet --filter dangling=true)
+        [[ -n $VOL ]] && docker volume rm $VOL
+    fi
+}
+
+function help_purge {
+	cat <<EOF | pager
+Usage: $SELF purge [OPTIONS]
+
+Remove dangling volumes
+
+  -d, --dry            Perform a trial run without purge dangling volumes
+EOF
+	exit 0
 }
 
 # volume rm [OPTIONS]

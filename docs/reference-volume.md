@@ -1,18 +1,27 @@
 # shed-volume
 
-    Usage:	shed-volume [OPTIONS] [COMMAND]
+    Usage: shed-volume [-h | --help | -V]
+           shed-volume [OPTIONS] [COMMAND]
     
     Manage Docker volumes
     
+    Options:
+        -h, --help  Help information
+        -V          Show version information
+    
     Commands:
-      create                   Create a volume
-      inspect                  Return low-level information on a volume
-      ls                       List volumes
-      rm                       Remove a volume
+        create [OPTIONS]
+            Create a volume
+        inspect [OPTIONS] VOLUME [VOLUME...]
+            Return low-level information on a volume
+        ls ls [OPTIONS]
+            List volumes
+        purge [OPTIONS]
+            Remove dangling volumes
+        rm [OPTIONS] VOLUME [VOLUME...]
+            Remove a volume
     
-    Run 'shed-volume COMMAND --help' for more information on a command
-    
-      --help             Print usage
+    Run 'shed-volume COMMAND --help' for more information on a command.
 
 # Commands
 
@@ -45,6 +54,14 @@
       -f, --filter=[]    Provide filter values (i.e. 'dangling=true')
       --help             Print usage
       -q, --quiet        Only display volume names
+
+## purge
+
+    Usage: shed-volume purge [OPTIONS]
+    
+    Remove dangling volumes
+    
+      -d, --dry            Perform a trial run without purge dangling volumes
 
 ## rm
 

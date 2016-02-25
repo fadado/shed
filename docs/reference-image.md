@@ -3,6 +3,8 @@
     Usage: shed-image [-h | --help | -V]
            shed-image COMMAND [ARGS]
     
+    Manage Docker images
+    
     Options:
         -h, --help  Help information
         -V          Show version information
@@ -14,16 +16,18 @@
             Create a new image from a container's changes
         history [OPTIONS] IMAGE
             Show the history of an image
-        images [OPTIONS] [REPOSITORY]
+        images [OPTIONS] [REPOSITORY[:TAG]]
             List images
         import [OPTIONS] file | URL | - [REPOSITORY[:TAG]]
-            Create an empty filesystem image from the contents of a tarbal
+            Import the contents from a tarball to create a filesystem image
         load [OPTIONS]
-            Load an image from a tar archive
+            Load an image from a tar archive or STDIN
+        purge [OPTIONS]
+            Remove dangling images
         rm [OPTIONS] IMAGE [IMAGE...]
             Remove one or more images
         save [OPTIONS] IMAGE [IMAGE...]
-            Save an image to a tar archive
+            Save an image(s) to a tar archive
         tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]
             Tag an image into a repository
     
@@ -114,6 +118,16 @@
     
       --help             Print usage
       -i, --input        Read from a tar archive file, instead of STDIN
+
+## purge
+
+    Usage: shed-image purge [OPTIONS]
+    
+    Remove dangling images
+    
+      -d, --dry            Perform a trial run without purging dangling images
+      -f, --force=false    Force removal of the image
+      --no-prune=false     Do not delete untagged parents
 
 ## rm
 

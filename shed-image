@@ -68,6 +68,7 @@ function main {
         i|im|ima|imag|image|images) COMMAND='images' ;;
         import) COMMAND='import' ;;
         lo|loa|load) COMMAND='load' ;;
+        p|pu|pur|purg|purge) COMMAND='purge' ;;
         rm|rmi) COMMAND='rmi' ;;
         s|sa|sav|save) COMMAND='save' ;;
         t|ta|tag) COMMAND='tag' ;;
@@ -98,6 +99,8 @@ function help_main {
 Usage: $SELF [-h | --help | -V]
        $SELF COMMAND [ARGS]
 
+Manage Docker images
+
 Options:
     -h, --help  Help information
     -V          Show version information
@@ -115,6 +118,8 @@ Commands:
         Import the contents from a tarball to create a filesystem image
     load [OPTIONS]
         Load an image from a tar archive or STDIN
+    purge [OPTIONS]
+        Remove dangling images
     rm [OPTIONS] IMAGE [IMAGE...]
         Remove one or more images
     save [OPTIONS] IMAGE [IMAGE...]
@@ -191,6 +196,51 @@ function image_load {
     help_command load "$@"
 
     docker load "$@"
+}
+
+# purge [OPTIONS]
+function image_purge {
+	local opt force prune
+    local -i dry=0
+
+	while getopts :dfh-: opt; do
+		case $opt in
+			d) dry=1 ;;
+			f) force='-f' ;;
+			h) help_purge ;;	
+			-)	case $OPTARG in
+                    dry) dry=1 ;;
+					force*) force="--$OPTARG" ;;
+					no-prune*) prune="--$OPTARG" ;;
+					help) help_purge ;;
+					*) help_purge ;;
+				esac
+				;;
+			?) help_purge ;;
+		esac
+	done
+
+	#shift $((OPTIND-1)); OPTIND=1
+
+    if (( dry )); then
+        docker images --no-trunc --quiet --filter dangling=true
+    else
+        local IMG=$(docker images --quiet --filter dangling=true)
+        [[ -n $IMG ]] && docker rmi $force $prune $IMG
+    fi
+}
+
+function help_purge {
+	cat <<EOF | pager
+Usage: $SELF purge [OPTIONS]
+
+Remove dangling images
+
+  -d, --dry            Perform a trial run without purging dangling images
+  -f, --force=false    Force removal of the image
+  --no-prune=false     Do not delete untagged parents
+EOF
+	exit 0
 }
 
 # rm [OPTIONS] IMAGE [IMAGE...]
