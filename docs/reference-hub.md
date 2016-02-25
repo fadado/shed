@@ -15,19 +15,20 @@
         info [OPTIONS]
             Display system-wide information
         inspect [OPTIONS] CONTAINER | IMAGE [CONTAINER | IMAGE...]
-            WARNING: recommended 'query' instead
+            Return low-level information on a container or image
         login [OPTIONS] [SERVER]
             Register or log in to a Docker registry server
         logout [OPTIONS] [SERVER]
             Log out from a Docker registry server
         pull [OPTIONS] NAME[:TAG | @DIGEST]
             Pull an image or a repository from a Docker registry server
+            Pull an image or a repository from a registry
         push [OPTIONS] NAME[:TAG]
-            Push an image or a repository to a Docker registry server
+            Push an image or a repository to a registry
         query [OPTIONS] CONTAINER | IMAGE [QUERY]
             Return YAML formated information on a container or image
         search [OPTIONS] TERM
-            Search for an image on the Docker Hub
+            Search the Docker Hub for images
         version [OPTIONS]
             Show the Docker version information
     

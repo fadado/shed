@@ -25,7 +25,7 @@ build_image() {
 	echo
 
 	echo -e '# Commands\n'
-	for cmd in build commit history images import load rm save tag
+	for cmd in build commit history images import load purge rm save tag
 	do
 		echo -e "## $cmd\n"
 		../shed-image $cmd -h | clean
