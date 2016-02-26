@@ -10,7 +10,7 @@ declare -r SELF=${0##*/}
 declare -ar CONFIG=( '/usr/local/etc/shed.conf' "$HOME/.shed" '.shed' )
 
 # Prefix to all image names
-#   [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+#   [REGISTRYHOST/][USERNAME/]NAME[#ALT][:TAG]
 #   ^^^^^^^^^^^^^^^^^^^^^^^^^^
 declare TAGS_PREFIX='shed'
 
@@ -76,7 +76,7 @@ function main {
     while getopts :Vh-: opt; do
         case $opt in
             V) version ;;
-            h) help_main ;; 
+            h) help_main ;;
             -)  case $OPTARG in
                     help) help_main ;;
                     *) usage option "--$OPTARG" ;;
@@ -185,7 +185,7 @@ function hub_build {
         case $opt in
             r) remove=1 ;;
             q) quiet=1 ;;
-            h) help_build ;;    
+            h) help_build ;;
             -)  case $OPTARG in
                     remove) remove=1 ;;
                     remove=true) remove=1 ;;
@@ -213,59 +213,66 @@ function hub_build {
     done
 
     # build images
-    local prefix=$TAGS_PREFIX image tag='latest'
-    for image in ${BUILDS[@]}
+    local prefix=$TAGS_PREFIX path tag='latest'
+    for path in ${BUILDS[@]}
     do
-        # Parse image tag: [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+        # Parse image tag: [REGISTRYHOST/][USERNAME/]NAME[#ALT][:TAG]
+        # path will be split several times
         local ifs=$IFS
-        # if has tag with / ([REGISTRYHOST/][USERNAME/]NAME[:TAG])
-        if [[ $image == */* ]]; then
+        # if has tag with / ([REGISTRYHOST/][USERNAME/]NAME[#ALT][:TAG])
+        if [[ $path == */* ]]; then
             IFS='/'
-            set -- $image   # split on '/'
+            set -- $path   # split on '/'
             IFS=$ifs    # restore
             if (( $# == 3 )); then
                 prefix="$1/$2"
-                image=$3
+                path=$3
             elif (( $# == 2 )); then
                 prefix=$1
-                image=$2
+                path=$2
             else
                 fatal 'Too many / in image tag'
             fi
         fi
         # if has tag with : (NAME[:TAG])
-        if [[ $image == *:* ]]; then
+        if [[ $path == *:* ]]; then
             IFS=':'
-            set -- $image   # split on ':'
+            set -- $path   # split on ':'
             IFS=$ifs    # restore
             (( $# == 2 )) || fatal 'Too many : in image tag'
-            image=$1
+            path=$1
             tag=$2
         fi
         # alternative name for dockerfile?
-        local FILE=$image/Dockerfile    # default
+        local FILE=$path/Dockerfile    # default
         # if tag has NAME with a # (NAME#DOCKERFILE)
         local alternate
-        if [[ $image == *'#'* ]]; then
+        if [[ $path == *'#'* ]]; then
             IFS='#'
-            set -- $image   # split on '#'
+            set -- $path   # split on '#'
             IFS=$ifs    # restore
             (( $# == 2 )) || fatal 'Too many # in image tag'
             alternate=1
-            image=$1
+            path=$1
             alternate=$2
-            FILE=$image/$alternate
+            FILE=$path/$alternate
         fi
-        # now $image must be a directory name, a path
-        [[ -d $image ]] || fatal "Directory $image does not exists"
+        # now $path must be a directory name
+        [[ -d $path ]] || fatal "Directory $path does not exists"
         [[ -f $FILE ]] || fatal "Dockerfile $FILE does not exists"
         # set final image name, prefixed if necessary
         local -l name
-        if [[ $image == . ]]; then name=${PWD##*/}; else name=$image; fi
-        [[ -n $alternate ]] && name=${alternate}
+        if [[ -n $alternate ]]; then
+            name=${alternate}
+        elif [[ $path == . ]]; then
+            name=${PWD##*/}
+        else
+            name=$path
+        fi
         [[ -n $PROJECT && $PROJECT != $name ]] && name="${PROJECT}_$name"
 
         # define more arguments to build
+        local   -a  BUILD_ARG
         local       CGROUP_PARENT
         local       CPUSET_CPUS
         local       CPUSET_MEMS
@@ -282,9 +289,10 @@ function hub_build {
         local       QUIET
         local       RM
         local       SHM_SIZE
-        local   -a  BUILD_ARG
         local   -a  TAG
         local   -a  ULIMIT
+
+        (( quiet )) && QUIET="--quiet=true"    # can be overrided
 
         local shedfile="${FILE}.shed"
         # source definitions if available
@@ -313,32 +321,31 @@ function hub_build {
             for i in ${!TAG[@]}; do         TAG[i]="--tag=${TAG[i]}"; done
             for i in ${!ULIMIT[@]}; do      ULIMIT[i]="--ulimit=${ULIMIT[i]}"; done
         fi
-        (( quiet )) && QUIET="--quiet=true"    # override
 
         # build image
         docker build \
-            --file $FILE \
-            --tag ${prefix}/${name}:${tag} \
-            $CGROUP_PARENT \
-            $CPUSET_CPUS \
-            $CPUSET_MEMS \
-            $CPU_PERIOD \
-            $CPU_QUOTA \
-            $CPU_SHARES \
-            $DISABLE_CONTENT_TRUST \
-            $FORCE_RM \
-            $ISOLATION \
-            $MEMORY \
-            $MEMORY_SWAP \
-            $NO_CACHE \
-            $PULL \
-            $QUIET \
-            $RM \
-            $SHM_SIZE \
+            --file "$FILE" \
+            --tag "${prefix}/${name}:${tag}" \
             "${BUILD_ARG[@]}" \
+            "${CGROUP_PARENT[@]}" \
+            "${CPUSET_CPUS[@]}" \
+            "${CPUSET_MEMS[@]}" \
+            "${CPU_PERIOD[@]}" \
+            "${CPU_QUOTA[@]}" \
+            "${CPU_SHARES[@]}" \
+            "${DISABLE_CONTENT_TRUST[@]}" \
+            "${FORCE_RM[@]}" \
+            "${ISOLATION[@]}" \
+            "${MEMORY[@]}" \
+            "${MEMORY_SWAP[@]}" \
+            "${NO_CACHE[@]}" \
+            "${PULL[@]}" \
+            "${QUIET[@]}" \
+            "${RM[@]}" \
+            "${SHM_SIZE[@]}" \
             "${TAG[@]}" \
             "${ULIMIT[@]}" \
-            $image
+            "$path"
 
         # tag latest
         if [[ $tag != 'latest' ]]; then
@@ -440,7 +447,7 @@ function hub_query {
 
     while getopts :h-: opt; do
         case $opt in
-            h) help_query ;;    
+            h) help_query ;;
             -)  case $OPTARG in
                     help) help_query ;;
                     *) help_query ;;

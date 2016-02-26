@@ -701,33 +701,33 @@ function container_build {
         $UTS \
         $VOLUME_DRIVER \
         $WORKDIR \
-        "${ADD_HOST[@]}" \
-        "${ATTACH[@]}" \
-        "${BLKIO_WEIGHT_DEVICE[@]}" \
-        "${CAP_ADD[@]}" \
-        "${CAP_DROP[@]}" \
-        "${DEVICE[@]}" \
-        "${DEVICE_READ_BPS[@]}" \
-        "${DEVICE_READ_IOPS[@]}" \
-        "${DEVICE_WRITE_BPS[@]}" \
-        "${DEVICE_WRITE_IOPS[@]}" \
-        "${DNS[@]}" \
-        "${DNS_SEARCH[@]}" \
-        "${ENV_FILE[@]}" \
-        "${ENVIRON[@]}" \
-        "${EXPOSE[@]}" \
-        "${GROUP_ADD[@]}" \
-        "${LABEL_PROJECT}" \
-        "${LABEL[@]}" \
-        "${LABEL_FILE[@]}" \
-        "${LINK[@]}" \
-        "${LOG_OPT[@]}" \
-        "${LXC_CONF[@]}" \
-        "${PUBLISH[@]}" \
-        "${SECURITY_OPT[@]}" \
-        "${ULIMIT[@]}" \
-        "${VOLUME[@]}" \
-        "${VOLUMES_FROM[@]}" \
+        ${ADD_HOST[@]} \
+        ${ATTACH[@]} \
+        ${BLKIO_WEIGHT_DEVICE[@]} \
+        ${CAP_ADD[@]} \
+        ${CAP_DROP[@]} \
+        ${DEVICE[@]} \
+        ${DEVICE_READ_BPS[@]} \
+        ${DEVICE_READ_IOPS[@]} \
+        ${DEVICE_WRITE_BPS[@]} \
+        ${DEVICE_WRITE_IOPS[@]} \
+        ${DNS[@]} \
+        ${DNS_SEARCH[@]} \
+        ${ENV_FILE[@]} \
+        ${ENVIRON[@]} \
+        ${EXPOSE[@]} \
+        ${GROUP_ADD[@]} \
+        ${LABEL_PROJECT} \
+        ${LABEL[@]} \
+        ${LABEL_FILE[@]} \
+        ${LINK[@]} \
+        ${LOG_OPT[@]} \
+        ${LXC_CONF[@]} \
+        ${PUBLISH[@]} \
+        ${SECURITY_OPT[@]} \
+        ${ULIMIT[@]} \
+        ${VOLUME[@]} \
+        ${VOLUMES_FROM[@]} \
         $IMAGE \
         "${CMD[@]}"
 }

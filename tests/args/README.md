@@ -1,6 +1,6 @@
 # Args
 
-This example demostrate the BUILD_ARG feature and alternative dockerfile.
+This example demostrate the `BUILD_ARG` feature and alternative dockerfile.
 
 1. Create container:
 

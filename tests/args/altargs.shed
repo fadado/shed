@@ -4,4 +4,6 @@ BUILD_ARG=(
 	MSG="That's all Folks!"
 )
 
+QUIET='false'
+
 # vim:syntax=sh:ai:sw=8:ts=8

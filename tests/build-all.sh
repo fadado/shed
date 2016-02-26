@@ -3,7 +3,7 @@
 time for img in $(find -maxdepth 1 -type d | sort); do
 	[[ $img == . ]] && continue
 	[[ ! -e $img/Shedfile ]] && continue
-	echo -e "\n>>>> Building ${img#./} <<<<"
+	echo 1>&2 -e "\n>>>> Building ${img#./} <<<<"
 	cd $img
 	make build
 	cd ..

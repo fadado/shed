@@ -15,6 +15,9 @@ scripts: `shed-hub`, `shed-image` and `shed-container`.  Docker has a lot of
 commands: the first exercise you must do to learn Docker is to classify these
 commands. In _Shed_ this work has been done in advance for you.
 
+The new Docker commands with subcommands, `network` and `volume`, reside in
+separate scripts: `shed-network` and `shed-volume`.
+
 ## Shedfiles
 
 For every project managed with _Shed_ you must write two configuration files,
@@ -39,10 +42,7 @@ This is a project Shedfile example:
         'busybox:latest'
     )
 
-    # images to build, with names in the form [REGISTRYHOST/][USERNAME/]NAME[:TAG]
-    # where NAME must be '.' or an immediate subdirectory and the optional prefix
-    # defaults to the USERNAME 'shed'. You can define an alternative Dockerfile name 
-    # using a NAME with the form name#dockerfile.
+    # images to build
     BUILDS=(
         '.'
     )
@@ -99,14 +99,58 @@ This is a dockerfile Shedfile example:
 
     # Additional tags
     TAG=(
-      'mary/docker-whale:1.3'
-      'private.com/docker-whale:1.3'
+        'mary/docker-whale:1.3'
+        'private.com/docker-whale:1.3'
     )
 
 All the parameters in the dockerfile Shedfile are forwarded to the `docker build` command,
 and the names are the same (but adapted to the _Bash_ syntax). The file
 [docs/dockerfile.shed](docs/dockerfile.shed) contains all available parameters
 with default values if defined.
+
+## Names for images and containers
+
+_Shed_ will choose names for images and containers using the following algorithms.
+
+### Images
+
+The full syntax for the string defining images in the project Shedfile
+parameter `BUILDS` is 
+
+    [REGISTRYHOST/][USERNAME/]NAME[#ALT][:TAG]
+
+This is an extension to the Docker tag syntax, with the added `[#ALT]` used to
+define an alternative Dockerfile filename.
+
+Image name algorithm:
+
+1. If an alternative Dockerfile has been provided, this filename is choosen as
+   the image name;  if not, the basename of the image path will be the image
+   name.
+
+3. If the `PROJECT` parameter is defined and is not equal to the image name,
+   this is prefixed with the `PROJECT` value and an underscore.
+
+### Image tags
+
+Tagging algorithm:
+
+
+1. All built images will be tagged with the `latest` tag.
+
+2. If a tag is provided in the string that defines the image, a second tag will be added.
+
+3. Additional tags can be defined in the `TAG` parameter in the dockerfile Shedfile.
+
+### Containers
+
+Container name algorithm:
+
+1. The names used in the `CONTAINERS` project Shedfile parameter are converted
+   to lowercase. The corresponding `.shed` file must exist.
+
+2. If the `PROJECT` parameter is defined and is not equal to the container name,
+   this is prefixed with the `PROJECT` value and an underscore.
 
 ## Configuration
 
@@ -119,7 +163,7 @@ _Shed_ will try to load several configuration files, in this order:
 At this moment the only parameter you can define is
 `TAGS_PREFIX`, used to set default prefix for image names (without the ending `/`):
 
-    [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    [REGISTRYHOST/][USERNAME/]NAME[#ALT][:TAG]
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The default value for `TAGS_PREFIX` is `shed`.
