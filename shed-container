@@ -598,6 +598,48 @@ function container_build {
     # source definitions
     source $shedfile || fatal "Syntax error loading $shedfile"
 
+    # unset empty parameters
+    [[ -z "${BLKIO_WEIGHT-unset}" ]] && unset BLKIO_WEIGHT
+    [[ -z "${CGROUP_PARENT-unset}" ]] && unset CGROUP_PARENT
+    [[ -z "${CIDFILE-unset}" ]] && unset CIDFILE
+    [[ -z "${CPUSET_CPUS-unset}" ]] && unset CPUSET_CPUS
+    [[ -z "${CPUSET_MEMS-unset}" ]] && unset CPUSET_MEMS
+    [[ -z "${CPU_PERIOD-unset}" ]] && unset CPU_PERIOD
+    [[ -z "${CPU_QUOTA-unset}" ]] && unset CPU_QUOTA
+    [[ -z "${CPU_SHARES-unset}" ]] && unset CPU_SHARES
+    [[ -z "${DISABLE_CONTENT_TRUST-unset}" ]] && unset DISABLE_CONTENT_TRUST
+    [[ -z "${ENTRYPOINT-unset}" ]] && unset ENTRYPOINT
+    [[ -z "${HOSTNAME-unset}" ]] && unset HOSTNAME
+    [[ -z "${INTERACTIVE-unset}" ]] && unset INTERACTIVE
+    [[ -z "${IP-unset}" ]] && unset IP
+    [[ -z "${IP6-unset}" ]] && unset IP6
+    [[ -z "${IPC-unset}" ]] && unset IPC
+    [[ -z "${ISOLATION-unset}" ]] && unset ISOLATION
+    [[ -z "${KERNEL_MEMORY-unset}" ]] && unset KERNEL_MEMORY
+    [[ -z "${LOG_DRIVER-unset}" ]] && unset LOG_DRIVER
+    [[ -z "${MAC_ADDRESS-unset}" ]] && unset MAC_ADDRESS
+    [[ -z "${MEMORY-unset}" ]] && unset MEMORY
+    [[ -z "${MEMORY_RESERVATION-unset}" ]] && unset MEMORY_RESERVATION
+    [[ -z "${MEMORY_SWAP-unset}" ]] && unset MEMORY_SWAP
+    [[ -z "${MEMORY_SWAPPINESS-unset}" ]] && unset MEMORY_SWAPPINESS
+    [[ -z "${NAME-unset}" ]] && unset NAME
+    [[ -z "${NET-unset}" ]] && unset NET
+    [[ -z "${OOM_KILL_DISABLE-unset}" ]] && unset OOM_KILL_DISABLE
+    [[ -z "${OOM_SCORE_ADJ-unset}" ]] && unset OOM_SCORE_ADJ
+    [[ -z "${PID-unset}" ]] && unset PID
+    [[ -z "${PRIVILEGED-unset}" ]] && unset PRIVILEGED
+    [[ -z "${PUBLISH_ALL-unset}" ]] && unset PUBLISH_ALL
+    [[ -z "${READ_ONLY-unset}" ]] && unset READ_ONLY
+    [[ -z "${RESTART-unset}" ]] && unset RESTART
+    [[ -z "${SHM_SIZE-unset}" ]] && unset SHM_SIZE
+    [[ -z "${STOP_SIGNAL-unset}" ]] && unset STOP_SIGNAL
+    [[ -z "${TTY-unset}" ]] && unset TTY
+    [[ -z "${USER-unset}" ]] && unset USER
+    [[ -z "${UTS-unset}" ]] && unset UTS
+    [[ -z "${VOLUME_DRIVER-unset}" ]] && unset VOLUME_DRIVER
+    [[ -z "${WORKDIR-unset}" ]] && unset WORKDIR
+
+    # extra parameters, image name, etc.
     [[ -n $IMAGE ]] || fatal 'IMAGE must be defined'
 
     if [[ -n $name ]]; then # name provided
@@ -610,73 +652,74 @@ function container_build {
         local LABEL_PROJECT="--label=shed.project=$PROJECT"
     fi
 
-    [[ -n $BLKIO_WEIGHT ]] &&   BLKIO_WEIGHT="--blkio-weight=$BLKIO_WEIGHT"
-    [[ -n $CGROUP_PARENT ]] &&  CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
-    [[ -n $CIDFILE ]] &&        CIDFILE="--cidfile=$CIDFILE"
-    [[ -n $CPUSET_CPUS ]] &&    CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS"
-    [[ -n $CPUSET_MEMS ]] &&    CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS"
-    [[ -n $CPU_PERIOD ]] &&     CPU_PERIOD="--cpu-period=$CPU_PERIOD"
-    [[ -n $CPU_QUOTA ]] &&      CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
-    [[ -n $CPU_SHARES ]] &&     CPU_SHARES="--cpu-shares=$CPU_SHARES"
+    # format parameters
+    [[ -n $BLKIO_WEIGHT ]] && BLKIO_WEIGHT="--blkio-weight=$BLKIO_WEIGHT"
+    [[ -n $CGROUP_PARENT ]] && CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
+    [[ -n $CIDFILE ]] && CIDFILE="--cidfile=$CIDFILE"
+    [[ -n $CPUSET_CPUS ]] && CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS"
+    [[ -n $CPUSET_MEMS ]] && CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS"
+    [[ -n $CPU_PERIOD ]] && CPU_PERIOD="--cpu-period=$CPU_PERIOD"
+    [[ -n $CPU_QUOTA ]] && CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
+    [[ -n $CPU_SHARES ]] && CPU_SHARES="--cpu-shares=$CPU_SHARES"
     [[ -n $DISABLE_CONTENT_TRUST ]] && DISABLE_CONTENT_TRUST="--disable-content-trust=$DISABLE_CONTENT_TRUST"
-    [[ -n $ENTRYPOINT ]] &&     ENTRYPOINT="--entrypoint=$ENTRYPOINT"
-    [[ -n $HOSTNAME ]] &&       HOSTNAME="--hostname=$HOSTNAME"
-    [[ -n $INTERACTIVE ]] &&    INTERACTIVE="--interactive=$INTERACTIVE"
-    [[ -n $IP ]] &&             IP="--ip=$IP"
-    [[ -n $IP6 ]] &&            IP6="--ip6=$IP6"
-    [[ -n $IPC ]] &&            IPC="--ipc=$IPC"
-    [[ -n $ISOLATION ]] &&      ISOLATION="--isolation=$ISOLATION"
-    [[ -n $KERNEL_MEMORY ]] &&  KERNEL_MEMORY="--kernel-memory=$KERNEL_MEMORY"
-    [[ -n $LOG_DRIVER ]] &&     LOG_DRIVER="--log-driver=$LOG_DRIVER"
-    [[ -n $MAC_ADDRESS ]] &&    MAC_ADDRESS="--mac-address=$MAC_ADDRESS"
-    [[ -n $MEMORY ]] &&         MEMORY="--memory=$MEMORY"
+    [[ -n $ENTRYPOINT ]] && ENTRYPOINT="--entrypoint=$ENTRYPOINT"
+    [[ -n $HOSTNAME ]] && HOSTNAME="--hostname=$HOSTNAME"
+    [[ -n $INTERACTIVE ]] && INTERACTIVE="--interactive=$INTERACTIVE"
+    [[ -n $IP ]] && IP="--ip=$IP"
+    [[ -n $IP6 ]] && IP6="--ip6=$IP6"
+    [[ -n $IPC ]] && IPC="--ipc=$IPC"
+    [[ -n $ISOLATION ]] && ISOLATION="--isolation=$ISOLATION"
+    [[ -n $KERNEL_MEMORY ]] && KERNEL_MEMORY="--kernel-memory=$KERNEL_MEMORY"
+    [[ -n $LOG_DRIVER ]] && LOG_DRIVER="--log-driver=$LOG_DRIVER"
+    [[ -n $MAC_ADDRESS ]] && MAC_ADDRESS="--mac-address=$MAC_ADDRESS"
+    [[ -n $MEMORY ]] && MEMORY="--memory=$MEMORY"
     [[ -n $MEMORY_RESERVATION ]] && MEMORY_RESERVATION="--memory-reservation=$MEMORY_RESERVATION"
-    [[ -n $MEMORY_SWAP ]] &&    MEMORY_SWAP="--memory-swap=$MEMORY_SWAP"
+    [[ -n $MEMORY_SWAP ]] && MEMORY_SWAP="--memory-swap=$MEMORY_SWAP"
     [[ -n $MEMORY_SWAPPINESS ]] && MEMORY_SWAPPINESS="--memory-swappiness=$MEMORY_SWAPPINESS"
-    [[ -n $NET ]] &&            NET="--net=$NET"
+    [[ -n $NET ]] && NET="--net=$NET"
     [[ -n $OOM_KILL_DISABLE ]] && OOM_KILL_DISABLE="--oom-kill-disable=$OOM_KILL_DISABLE"
     [[ -n $OOM_SCORE_ADJ ]] && OOM_SCORE_ADJ="--oom-score-adj=$OOM_SCORE_ADJ"
-    [[ -n $PID ]] &&            PID="--pid=$PID"
-    [[ -n $PRIVILEGED ]] &&     PRIVILEGED="--privileged=$PRIVILEGED"
-    [[ -n $PUBLISH_ALL ]] &&    PUBLISH_ALL="--publish-all=$PUBLISH_ALL"
-    [[ -n $READ_ONLY ]] &&      READ_ONLY="--read-only=$READ_ONLY"
-    [[ -n $RESTART ]] &&        RESTART="--restart=$RESTART"
-    [[ -n $SHM_SIZE ]] &&       SHM_SIZE="--shm-size=$SHM_SIZE"
-    [[ -n $STOP_SIGNAL ]] &&    STOP_SIGNAL="--stop-signal=$STOP_SIGNAL"
-    [[ -n $TTY ]] &&            TTY="--tty=$TTY"
-    [[ -n $USER ]] &&           USER="--user=$USER"
-    [[ -n $UTS ]] &&            UTS="--uts=$UTS"
-    [[ -n $VOLUME_DRIVER ]] &&  VOLUME_DRIVER="--volume-driver=$VOLUME_DRIVER"
-    [[ -n $WORKDIR ]] &&        WORKDIR="--workdir=$WORKDIR"
+    [[ -n $PID ]] && PID="--pid=$PID"
+    [[ -n $PRIVILEGED ]] && PRIVILEGED="--privileged=$PRIVILEGED"
+    [[ -n $PUBLISH_ALL ]] && PUBLISH_ALL="--publish-all=$PUBLISH_ALL"
+    [[ -n $READ_ONLY ]] && READ_ONLY="--read-only=$READ_ONLY"
+    [[ -n $RESTART ]] && RESTART="--restart=$RESTART"
+    [[ -n $SHM_SIZE ]] && SHM_SIZE="--shm-size=$SHM_SIZE"
+    [[ -n $STOP_SIGNAL ]] && STOP_SIGNAL="--stop-signal=$STOP_SIGNAL"
+    [[ -n $TTY ]] && TTY="--tty=$TTY"
+    [[ -n $USER ]] && USER="--user=$USER"
+    [[ -n $UTS ]] && UTS="--uts=$UTS"
+    [[ -n $VOLUME_DRIVER ]] && VOLUME_DRIVER="--volume-driver=$VOLUME_DRIVER"
+    [[ -n $WORKDIR ]] && WORKDIR="--workdir=$WORKDIR"
 
     local k; local -i i
-    for i in ${!ADD_HOST[@]}; do    ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
-    for i in ${!ATTACH[@]}; do      DEVICE[i]="--attach=${ATTACH[i]}"; done
+    for i in ${!ADD_HOST[@]}; do ADD_HOST[i]="--add-host=${ADD_HOST[i]}"; done
+    for i in ${!ATTACH[@]}; do DEVICE[i]="--attach=${ATTACH[i]}"; done
     for i in ${!BLKIO_WEIGHT_DEVICE[@]}; do BLKIO_WEIGHT_DEVICE[i]="--blkio-weight-device=${BLKIO_WEIGHT_DEVICE[i]}"; done
-    for i in ${!CAP_ADD[@]}; do     CAP_ADD[i]="--cap-add=${CAP_ADD[i]}"; done
-    for i in ${!CAP_DROP[@]}; do    CAP_DROP[i]="--cap-drop=${CAP_DROP[i]}"; done
-    for i in ${!DEVICE[@]}; do      DEVICE[i]="--device=${DEVICE[i]}"; done
+    for i in ${!CAP_ADD[@]}; do CAP_ADD[i]="--cap-add=${CAP_ADD[i]}"; done
+    for i in ${!CAP_DROP[@]}; do CAP_DROP[i]="--cap-drop=${CAP_DROP[i]}"; done
+    for i in ${!DEVICE[@]}; do DEVICE[i]="--device=${DEVICE[i]}"; done
     for i in ${!DEVICE_READ_BPS[@]}; do DEVICE_READ_BPS[i]="--device-read-bps=${DEVICE_READ_BPS[i]}"; done
     for i in ${!DEVICE_READ_IOPS[@]}; do DEVICE_READ_IOPS[i]="--device-read-iops=${DEVICE_READ_IOPS[i]}"; done
     for i in ${!DEVICE_WRITE_BPS[@]}; do DEVICE_WRITE_BPS[i]="--device-write-bps=${DEVICE_WRITE_BPS[i]}"; done
     for i in ${!DEVICE_WRITE_IOPS[@]}; do DEVICE_WRITE_IOPS[i]="--device-write-iops=${DEVICE_WRITE_IOPS[i]}"; done
-    for i in ${!DNS[@]}; do         DNS[i]="--dns=${DNS[i]}"; done
-    for i in ${!DNS_SEARCH[@]}; do  DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
-    for k in ${!ENVIRON[@]}; do     ENVIRON[$k]="--env=$k=${ENVIRON[$k]}"; done
-    for i in ${!ENV_FILE[@]}; do    ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
-    for i in ${!EXPOSE[@]}; do      EXPOSE[i]="--expose=${EXPOSE[i]}"; done
-    for i in ${!GROUP_ADD[@]}; do   GROUP_ADD[i]="--group-add=${GROUP_ADD[i]}"; done
-    for i in ${!NET_ALIAS[@]}; do   NET_ALIAS[i]="--net-alias=${NET_ALIAS[i]}"; done
-    for i in ${!LABEL[@]}; do       LABEL[i]="--label=${LABEL[i]}"; done
-    for i in ${!LABEL_FILE[@]}; do  LABEL_FILE[i]="--label-file=${LABEL_FILE[i]}"; done
-    for i in ${!LINK[@]}; do        LINK[i]="--link=${LINK[i]}"; done
-    for i in ${!LOG_OPT[@]}; do     LOG_OPT[i]="--log-opt=${LOG_OPT[i]}"; done
-    for i in ${!LXC_CONF[@]}; do    LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
-    for i in ${!PUBLISH[@]}; do     PUBLISH[i]="--publish=${PUBLISH[i]}"; done
+    for i in ${!DNS[@]}; do DNS[i]="--dns=${DNS[i]}"; done
+    for i in ${!DNS_SEARCH[@]}; do DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
+    for k in ${!ENVIRON[@]}; do ENVIRON[$k]="--env=$k=${ENVIRON[$k]}"; done
+    for i in ${!ENV_FILE[@]}; do ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
+    for i in ${!EXPOSE[@]}; do EXPOSE[i]="--expose=${EXPOSE[i]}"; done
+    for i in ${!GROUP_ADD[@]}; do GROUP_ADD[i]="--group-add=${GROUP_ADD[i]}"; done
+    for i in ${!NET_ALIAS[@]}; do NET_ALIAS[i]="--net-alias=${NET_ALIAS[i]}"; done
+    for i in ${!LABEL[@]}; do LABEL[i]="--label=${LABEL[i]}"; done
+    for i in ${!LABEL_FILE[@]}; do LABEL_FILE[i]="--label-file=${LABEL_FILE[i]}"; done
+    for i in ${!LINK[@]}; do LINK[i]="--link=${LINK[i]}"; done
+    for i in ${!LOG_OPT[@]}; do LOG_OPT[i]="--log-opt=${LOG_OPT[i]}"; done
+    for i in ${!LXC_CONF[@]}; do LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
+    for i in ${!PUBLISH[@]}; do PUBLISH[i]="--publish=${PUBLISH[i]}"; done
     for i in ${!SECURITY_OPT[@]}; do SECURITY_OPT[i]="--security-opt=${SECURITY_OPT[i]}"; done
-    for i in ${!TMPFS[@]}; do       TMPFS[i]="--tmpfs=${TMPFS[i]}"; done
-    for i in ${!ULIMIT[@]}; do      ULIMIT[i]="--ulimit=${ULIMIT[i]}"; done
-    for i in ${!VOLUME[@]}; do      VOLUME[i]="--volume=${VOLUME[i]}"; done
+    for i in ${!TMPFS[@]}; do TMPFS[i]="--tmpfs=${TMPFS[i]}"; done
+    for i in ${!ULIMIT[@]}; do ULIMIT[i]="--ulimit=${ULIMIT[i]}"; done
+    for i in ${!VOLUME[@]}; do VOLUME[i]="--volume=${VOLUME[i]}"; done
     for i in ${!VOLUMES_FROM[@]}; do VOLUMES_FROM[i]="--volumes-from=${VOLUMES_FROM[i]}"; done
 
     if (( remove )); then
@@ -685,6 +728,7 @@ function container_build {
         docker rm $name &>/dev/null
     fi
 
+    # build container
     docker create \
         "${ADD_HOST[@]}" \
         "${ATTACH[@]}" \

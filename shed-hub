@@ -299,22 +299,41 @@ function hub_build {
         if [[ -f $shedfile ]]; then
             source $shedfile || fatal "Syntax error loading $shedfile"
 
-            [[ -n $CGROUP_PARENT ]] &&  CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
-            [[ -n $CPUSET_CPUS ]] &&    CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS"
-            [[ -n $CPUSET_MEMS ]] &&    CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS"
-            [[ -n $CPU_PERIOD ]] &&     CPU_PERIOD="--cpu-period=$CPU_PERIOD"
-            [[ -n $CPU_QUOTA ]] &&      CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
-            [[ -n $CPU_SHARES ]] &&     CPU_SHARES="--cpu-shares=$CPU_SHARES"
+            # unset empty parameters
+            [[ -z "${CGROUP_PARENT-unset}" ]] && unset CGROUP_PARENT
+            [[ -z "${CPUSET_CPUS-unset}" ]] && unset CPUSET_CPUS
+            [[ -z "${CPUSET_MEMS-unset}" ]] && unset CPUSET_MEMS
+            [[ -z "${CPU_PERIOD-unset}" ]] && unset CPU_PERIOD
+            [[ -z "${CPU_QUOTA-unset}" ]] && unset CPU_QUOTA
+            [[ -z "${CPU_SHARES-unset}" ]] && unset CPU_SHARES
+            [[ -z "${DISABLE_CONTENT_TRUST-unset}" ]] && unset DISABLE_CONTENT_TRUST
+            [[ -z "${FORCE_RM-unset}" ]] && unset FORCE_RM
+            [[ -z "${ISOLATION-unset}" ]] && unset ISOLATION
+            [[ -z "${MEMORY-unset}" ]] && unset MEMORY
+            [[ -z "${MEMORY_SWAP-unset}" ]] && unset MEMORY_SWAP
+            [[ -z "${NO_CACHE-unset}" ]] && unset NO_CACHE
+            [[ -z "${PULL-unset}" ]] && unset PULL
+            [[ -z "${QUIET-unset}" ]] && unset QUIET
+            [[ -z "${RM-unset}" ]] && unset RM
+            [[ -z "${SHM_SIZE-unset}" ]] && unset SHM_SIZE
+
+            # format parameters
+            [[ -n $CGROUP_PARENT ]] && CGROUP_PARENT="--cgroup-parent=$CGROUP_PARENT"
+            [[ -n $CPUSET_CPUS ]] && CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS"
+            [[ -n $CPUSET_MEMS ]] && CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS"
+            [[ -n $CPU_PERIOD ]] && CPU_PERIOD="--cpu-period=$CPU_PERIOD"
+            [[ -n $CPU_QUOTA ]] && CPU_QUOTA="--cpu-quota=$CPU_QUOTA"
+            [[ -n $CPU_SHARES ]] && CPU_SHARES="--cpu-shares=$CPU_SHARES"
             [[ -n $DISABLE_CONTENT_TRUST ]] && DISABLE_CONTENT_TRUST="--disable-content-trust=$DISABLE_CONTENT_TRUST"
-            [[ -n $FORCE_RM ]] &&       FORCE_RM="--force-rm=$FORCE_RM"
-            [[ -n $ISOLATION ]] &&      ISOLATION="--isolation=$ISOLATION"
-            [[ -n $MEMORY ]] &&         MEMORY="--memory=$MEMORY"
-            [[ -n $MEMORY_SWAP ]] &&    MEMORY_SWAP="--memory-swap=$MEMORY_SWAP"
-            [[ -n $NO_CACHE ]] &&       NO_CACHE="--no-cache=$NO_CACHE"
-            [[ -n $PULL ]] &&           PULL="--pull=$PULL"
-            [[ -n $RM ]] &&             RM="--rm=$RM"
-            [[ -n $SHM_SIZE ]] &&       SHM_SIZE="--shm-size=$SHM_SIZE"
-            [[ -n $QUIET ]] &&          QUIET="--quiet=$QUIET"
+            [[ -n $FORCE_RM ]] && FORCE_RM="--force-rm=$FORCE_RM"
+            [[ -n $ISOLATION ]] && ISOLATION="--isolation=$ISOLATION"
+            [[ -n $MEMORY ]] && MEMORY="--memory=$MEMORY"
+            [[ -n $MEMORY_SWAP ]] && MEMORY_SWAP="--memory-swap=$MEMORY_SWAP"
+            [[ -n $NO_CACHE ]] && NO_CACHE="--no-cache=$NO_CACHE"
+            [[ -n $PULL ]] && PULL="--pull=$PULL"
+            [[ -n $RM ]] && RM="--rm=$RM"
+            [[ -n $SHM_SIZE ]] && SHM_SIZE="--shm-size=$SHM_SIZE"
+            [[ -n $QUIET ]] && QUIET="--quiet=$QUIET"
 
             local -i i
             for i in ${!BUILD_ARG[@]}; do   BUILD_ARG[i]="--build-arg=${BUILD_ARG[i]}"; done
