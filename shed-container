@@ -522,10 +522,13 @@ function container_build {
 
     unset HOSTNAME USER # to be redefined
 
-    local       IMAGE
-    local   -a  CMD
-
+    # parameters for create
+    local   -a  ADD_HOST
+    local   -a  ATTACH
     local       BLKIO_WEIGHT
+    local   -a  BLKIO_WEIGHT_DEVICE
+    local   -a  CAP_ADD
+    local   -a  CAP_DROP
     local       CGROUP_PARENT
     local       CIDFILE
     local       CPUSET_CPUS
@@ -533,57 +536,64 @@ function container_build {
     local       CPU_PERIOD
     local       CPU_QUOTA
     local       CPU_SHARES
-    local       DISABLE_CONTENT_TRUST
-    local       ENTRYPOINT
-    local       HOSTNAME
-    local       INTERACTIVE
-    local       IPC
-    local       LOG_DRIVER
-    local       MAC_ADDRESS
-    local       MEMORY
-    local       MEMORY_SWAP
-    local       MEMORY_SWAPPINESS
-    local       NAME
-    local       NET
-    local       OOM_KILL_DISABLE
-    local       OOM_SCORE_ADJ
-    local       PID
-    local       PRIVILEGED
-    local       PUBLISH_ALL
-    local       READ_ONLY
-    local       RESTART
-    local       SHM_SIZE
-    local       TTY
-    local       USER
-    local       UTS
-    local       VOLUME_DRIVER
-    local       WORKDIR
-    local   -a  ADD_HOST
-    local   -a  BLKIO_WEIGHT_DEVICE
-    local   -a  ATTACH
-    local   -a  CAP_ADD
-    local   -a  CAP_DROP
     local   -a  DEVICE
     local   -a  DEVICE_READ_BPS
     local   -a  DEVICE_READ_IOPS
     local   -a  DEVICE_WRITE_BPS
     local   -a  DEVICE_WRITE_IOPS
+    local       DISABLE_CONTENT_TRUST
     local   -a  DNS
     local   -a  DNS_SEARCH
-    local   -a  ENV_FILE
+    local       ENTRYPOINT
     local   -A  ENVIRON     # ENV is reserved in the Posix shell
+    local   -a  ENV_FILE
     local   -a  EXPOSE
     local   -a  GROUP_ADD
+    local       HOSTNAME
+    local       INTERACTIVE
+    local       IP
+    local       IP6
+    local       IPC
+    local       ISOLATION
+    local       KERNEL_MEMORY
     local   -a  LABEL
     local   -a  LABEL_FILE
     local   -a  LINK
+    local       LOG_DRIVER
     local   -a  LOG_OPT
     local   -a  LXC_CONF
+    local       MAC_ADDRESS
+    local       MEMORY
+    local       MEMORY_RESERVATION
+    local       MEMORY_SWAP
+    local       MEMORY_SWAPPINESS
+    local       NAME
+    local       NET
+    local   -a  NET_ALIAS
+    local       OOM_KILL_DISABLE
+    local       OOM_SCORE_ADJ
+    local       PID
+    local       PRIVILEGED
     local   -a  PUBLISH
+    local       PUBLISH_ALL
+    local       READ_ONLY
+    local       RESTART
     local   -a  SECURITY_OPT
+    local       SHM_SIZE
+    local       STOP_SIGNAL
+    local   -a  TMPFS
+    local       TTY
+    local       USER
+    local       UTS
+    local       VOLUME_DRIVER
     local   -a  ULIMIT
     local   -a  VOLUME
     local   -a  VOLUMES_FROM
+    local       WORKDIR
+
+    # image name and command
+    local       IMAGE
+    local   -a  CMD
 
     # source definitions
     source $shedfile || fatal "Syntax error loading $shedfile"
@@ -597,7 +607,7 @@ function container_build {
     rm -f $CIDFILE
 
     if [[ -n $PROJECT ]]; then
-        local LABEL_PROJECT='--label=shed.project='$PROJECT
+        local LABEL_PROJECT="--label=shed.project=$PROJECT"
     fi
 
     [[ -n $BLKIO_WEIGHT ]] &&   BLKIO_WEIGHT="--blkio-weight=$BLKIO_WEIGHT"
@@ -612,10 +622,15 @@ function container_build {
     [[ -n $ENTRYPOINT ]] &&     ENTRYPOINT="--entrypoint=$ENTRYPOINT"
     [[ -n $HOSTNAME ]] &&       HOSTNAME="--hostname=$HOSTNAME"
     [[ -n $INTERACTIVE ]] &&    INTERACTIVE="--interactive=$INTERACTIVE"
+    [[ -n $IP ]] &&             IP="--ip=$IP"
+    [[ -n $IP6 ]] &&            IP6="--ip6=$IP6"
     [[ -n $IPC ]] &&            IPC="--ipc=$IPC"
+    [[ -n $ISOLATION ]] &&      ISOLATION="--isolation=$ISOLATION"
+    [[ -n $KERNEL_MEMORY ]] &&  KERNEL_MEMORY="--kernel-memory=$KERNEL_MEMORY"
     [[ -n $LOG_DRIVER ]] &&     LOG_DRIVER="--log-driver=$LOG_DRIVER"
     [[ -n $MAC_ADDRESS ]] &&    MAC_ADDRESS="--mac-address=$MAC_ADDRESS"
     [[ -n $MEMORY ]] &&         MEMORY="--memory=$MEMORY"
+    [[ -n $MEMORY_RESERVATION ]] && MEMORY_RESERVATION="--memory-reservation=$MEMORY_RESERVATION"
     [[ -n $MEMORY_SWAP ]] &&    MEMORY_SWAP="--memory-swap=$MEMORY_SWAP"
     [[ -n $MEMORY_SWAPPINESS ]] && MEMORY_SWAPPINESS="--memory-swappiness=$MEMORY_SWAPPINESS"
     [[ -n $NET ]] &&            NET="--net=$NET"
@@ -627,6 +642,7 @@ function container_build {
     [[ -n $READ_ONLY ]] &&      READ_ONLY="--read-only=$READ_ONLY"
     [[ -n $RESTART ]] &&        RESTART="--restart=$RESTART"
     [[ -n $SHM_SIZE ]] &&       SHM_SIZE="--shm-size=$SHM_SIZE"
+    [[ -n $STOP_SIGNAL ]] &&    STOP_SIGNAL="--stop-signal=$STOP_SIGNAL"
     [[ -n $TTY ]] &&            TTY="--tty=$TTY"
     [[ -n $USER ]] &&           USER="--user=$USER"
     [[ -n $UTS ]] &&            UTS="--uts=$UTS"
@@ -646,9 +662,11 @@ function container_build {
     for i in ${!DEVICE_WRITE_IOPS[@]}; do DEVICE_WRITE_IOPS[i]="--device-write-iops=${DEVICE_WRITE_IOPS[i]}"; done
     for i in ${!DNS[@]}; do         DNS[i]="--dns=${DNS[i]}"; done
     for i in ${!DNS_SEARCH[@]}; do  DNS_SEARCH[i]="--dns-search=${DNS_SEARCH[i]}"; done
+    for k in ${!ENVIRON[@]}; do     ENVIRON[$k]="--env=$k=${ENVIRON[$k]}"; done
     for i in ${!ENV_FILE[@]}; do    ENV_FILE[i]="--env-file=${ENV_FILE[i]}"; done
     for i in ${!EXPOSE[@]}; do      EXPOSE[i]="--expose=${EXPOSE[i]}"; done
     for i in ${!GROUP_ADD[@]}; do   GROUP_ADD[i]="--group-add=${GROUP_ADD[i]}"; done
+    for i in ${!NET_ALIAS[@]}; do   NET_ALIAS[i]="--net-alias=${NET_ALIAS[i]}"; done
     for i in ${!LABEL[@]}; do       LABEL[i]="--label=${LABEL[i]}"; done
     for i in ${!LABEL_FILE[@]}; do  LABEL_FILE[i]="--label-file=${LABEL_FILE[i]}"; done
     for i in ${!LINK[@]}; do        LINK[i]="--link=${LINK[i]}"; done
@@ -656,10 +674,10 @@ function container_build {
     for i in ${!LXC_CONF[@]}; do    LXC_CONF[i]="--lxc-conf=${LXC_CONF[i]}"; done
     for i in ${!PUBLISH[@]}; do     PUBLISH[i]="--publish=${PUBLISH[i]}"; done
     for i in ${!SECURITY_OPT[@]}; do SECURITY_OPT[i]="--security-opt=${SECURITY_OPT[i]}"; done
+    for i in ${!TMPFS[@]}; do       TMPFS[i]="--tmpfs=${TMPFS[i]}"; done
     for i in ${!ULIMIT[@]}; do      ULIMIT[i]="--ulimit=${ULIMIT[i]}"; done
     for i in ${!VOLUME[@]}; do      VOLUME[i]="--volume=${VOLUME[i]}"; done
     for i in ${!VOLUMES_FROM[@]}; do VOLUMES_FROM[i]="--volumes-from=${VOLUMES_FROM[i]}"; done
-    for k in ${!ENVIRON[@]}; do     ENVIRON[$k]="--env $k=${ENVIRON[$k]}"; done
 
     if (( remove )); then
         [[ -n $name ]] || fatal 'must provide a name'
@@ -668,67 +686,75 @@ function container_build {
     fi
 
     docker create \
-        $BLKIO_WEIGHT \
-        $CGROUP_PARENT \
-        $CIDFILE \
-        $CPUSET_CPUS \
-        $CPUSET_MEMS \
-        $CPU_PERIOD \
-        $CPU_QUOTA \
-        $CPU_SHARES \
-        $DISABLE_CONTENT_TRUST \
-        $ENTRYPOINT \
-        $HOSTNAME \
-        $INTERACTIVE \
-        $IPC \
-        $LOG_DRIVER \
-        $MAC_ADDRESS \
-        $MEMORY \
-        $MEMORY_SWAP \
-        $MEMORY_SWAPPINESS \
-        $NAME \
-        $NET \
-        $OOM_KILL_DISABLE \
-        $OOM_SCORE_ADJ \
-        $PID \
-        $PRIVILEGED \
-        $PUBLISH_ALL \
-        $READ_ONLY \
-        $RESTART \
-        $SHM_SIZE \
-        $TTY \
-        $USER \
-        $UTS \
-        $VOLUME_DRIVER \
-        $WORKDIR \
-        ${ADD_HOST[@]} \
-        ${ATTACH[@]} \
-        ${BLKIO_WEIGHT_DEVICE[@]} \
-        ${CAP_ADD[@]} \
-        ${CAP_DROP[@]} \
-        ${DEVICE[@]} \
-        ${DEVICE_READ_BPS[@]} \
-        ${DEVICE_READ_IOPS[@]} \
-        ${DEVICE_WRITE_BPS[@]} \
-        ${DEVICE_WRITE_IOPS[@]} \
-        ${DNS[@]} \
-        ${DNS_SEARCH[@]} \
-        ${ENV_FILE[@]} \
-        ${ENVIRON[@]} \
-        ${EXPOSE[@]} \
-        ${GROUP_ADD[@]} \
-        ${LABEL_PROJECT} \
-        ${LABEL[@]} \
-        ${LABEL_FILE[@]} \
-        ${LINK[@]} \
-        ${LOG_OPT[@]} \
-        ${LXC_CONF[@]} \
-        ${PUBLISH[@]} \
-        ${SECURITY_OPT[@]} \
-        ${ULIMIT[@]} \
-        ${VOLUME[@]} \
-        ${VOLUMES_FROM[@]} \
-        $IMAGE \
+        "${ADD_HOST[@]}" \
+        "${ATTACH[@]}" \
+        "${BLKIO_WEIGHT[@]}" \
+        "${BLKIO_WEIGHT_DEVICE[@]}" \
+        "${CAP_ADD[@]}" \
+        "${CAP_DROP[@]}" \
+        "${CGROUP_PARENT[@]}" \
+        "${CIDFILE[@]}" \
+        "${CPUSET_CPUS[@]}" \
+        "${CPUSET_MEMS[@]}" \
+        "${CPU_PERIOD[@]}" \
+        "${CPU_QUOTA[@]}" \
+        "${CPU_SHARES[@]}" \
+        "${DEVICE[@]}" \
+        "${DEVICE_READ_BPS[@]}" \
+        "${DEVICE_READ_IOPS[@]}" \
+        "${DEVICE_WRITE_BPS[@]}" \
+        "${DEVICE_WRITE_IOPS[@]}" \
+        "${DISABLE_CONTENT_TRUST[@]}" \
+        "${DNS[@]}" \
+        "${DNS_SEARCH[@]}" \
+        "${ENTRYPOINT[@]}" \
+        "${ENVIRON[@]}" \
+        "${ENV_FILE[@]}" \
+        "${EXPOSE[@]}" \
+        "${GROUP_ADD[@]}" \
+        "${HOSTNAME[@]}" \
+        "${INTERACTIVE[@]}" \
+        "${IP6[@]}" \
+        "${IPC[@]}" \
+        "${IP[@]}" \
+        "${ISOLATION[@]}" \
+        "${KERNEL_MEMORY[@]}" \
+        "${LABEL[@]}" \
+        "${LABEL_FILE[@]}" \
+        "${LABEL_PROJECT[@]}" \
+        "${LINK[@]}" \
+        "${LOG_DRIVER[@]}" \
+        "${LOG_OPT[@]}" \
+        "${LXC_CONF[@]}" \
+        "${MAC_ADDRESS[@]}" \
+        "${MEMORY[@]}" \
+        "${MEMORY_RESERVATION[@]}" \
+        "${MEMORY_SWAPPINESS[@]}" \
+        "${MEMORY_SWAP[@]}" \
+        "${NAME[@]}" \
+        "${NET[@]}" \
+        "${NET_ALIAS[@]}" \
+        "${OOM_KILL_DISABLE[@]}" \
+        "${OOM_SCORE_ADJ[@]}" \
+        "${PID[@]}" \
+        "${PRIVILEGED[@]}" \
+        "${PUBLISH[@]}" \
+        "${PUBLISH_ALL[@]}" \
+        "${READ_ONLY[@]}" \
+        "${RESTART[@]}" \
+        "${SECURITY_OPT[@]}" \
+        "${SHM_SIZE[@]}" \
+        "${STOP_SIGNAL[@]}" \
+        "${TMPFS[@]}" \
+        "${TTY[@]}" \
+        "${ULIMIT[@]}" \
+        "${USER[@]}" \
+        "${UTS[@]}" \
+        "${VOLUMES_FROM[@]}" \
+        "${VOLUME[@]}" \
+        "${VOLUME_DRIVER[@]}" \
+        "${WORKDIR[@]}" \
+        "$IMAGE" \
         "${CMD[@]}"
 }
 

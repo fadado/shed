@@ -10,13 +10,18 @@ containers. Additionally, there are some new commands.
 _Shed_ is written in _Bash_ and it works reading some configurations files that
 are also _Bash_ scripts, declaring parameters with string, list or dictionary values.
 
-For easy management, the _Shed_ commands are classified in three separated
-scripts: `shed-hub`, `shed-image` and `shed-container`.  Docker has a lot of
-commands: the first exercise you must do to learn Docker is to classify these
-commands. In _Shed_ this work has been done in advance for you.
+For easy management, the _Shed_ commands are divided in several separated
+scripts. Each script has a reference document:
 
-The new Docker commands with subcommands, `network` and `volume`, reside in
-separate scripts: `shed-network` and `shed-volume`.
+* [`reference-hub.md`](docs/reference-hub.md): documentation for [`shed-hub`](shed-hub) commands.
+
+* [`reference-image.md`](docs/reference-image.md): documentation for [`shed-image`](shed-image) commands.
+
+* [`reference-container.md`](docs/reference-container.md): documentation for [`shed-container`](shed-container) commands.
+
+* [`reference-network.md`](docs/reference-network.md): documentation for [`shed-network`](shed-network) commands.
+
+* [`reference-volume.md`](docs/reference-volume.md): documentation for [`shed-volume`](shed-volume) commands.
 
 ## Shedfiles
 
@@ -28,7 +33,8 @@ Also, if you want to configure the implicit call to `docker build` made by `shed
 you  can define a file called `Dockerfile.shed` for each image to build.
 
 These files are _Bash_ files, and all the power of _Bash_ is available. The files
-define parameters, with string, list o dictionary values. 
+define parameters, with string, list o dictionary values. Important: parameters
+not used must not be set, even to the empty string!
 
 ### Project shedfile
 
@@ -125,8 +131,8 @@ define an alternative Dockerfile filename.
 Image name algorithm:
 
 1. If an alternative Dockerfile has been provided, this filename is choosen as
-   the image name;  if not, the basename of the image path will be the image
-   name.
+   the image name (without extension);  if not, the basename of the image path
+   will be the image name.
 
 3. If the `PROJECT` parameter is defined and is not equal to the image name,
    this is prefixed with the `PROJECT` value and an underscore.

@@ -263,7 +263,7 @@ function hub_build {
         # set final image name, prefixed if necessary
         local -l name
         if [[ -n $alternate ]]; then
-            name=${alternate}
+            name=${alternate%%.*}   # without extension
         elif [[ $path == . ]]; then
             name=${PWD##*/}
         else

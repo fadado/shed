@@ -101,8 +101,20 @@ HOSTNAME=$(basename $BASH_SOURCE .shed)
 # -i, --interactive=false
 INTERACTIVE='false'
 
+# --ip=""
+IP=''
+
+# --ip6=""
+IP6=''
+
 # --ipc=""
 IPC=''
+
+# --isolation="default"
+ISOLATION=''
+
+# --kernel-memory=""
+KERNEL_MEMORY=''
 
 # -l, --label=[]
 LABEL=()
@@ -128,6 +140,9 @@ MAC_ADDRESS=''
 # -m, --memory=""
 MEMORY=''
 
+#--memory-reservation=""
+MEMORY_RESERVATION=''
+
 # --memory-swap=
 MEMORY_SWAP=''
 
@@ -136,6 +151,9 @@ MEMORY_SWAPPINESS=-1
 
 # --net=default
 NET='bridge'
+
+#--net-alias=[]
+NET_ALIAS=()
 
 # --oom-score-adj=""
 OOM_SCORE_ADJ=''
@@ -167,8 +185,14 @@ SECURITY_OPT=()
 # --shm-size=""
 SHM_SIZE=''
 
+#--stop-signal=SIGTERM
+STOP_SIGNAL=''
+
 # -t, --tty=false
 TTY='false'
+
+# --tmpfs=[]
+TMPFS=()
 
 # --ulimit=[]
 ULIMIT=()

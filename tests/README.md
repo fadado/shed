@@ -6,9 +6,6 @@ Example tests grouped in this directory:
 
 1. [**args**](./args): demostrate the `BUILD_ARG` feature and alternative dockerfile.
 
-1. [**create**](./create): implements the classical "Hello, world!" test with all possible
-   parameters defined in the `hello.shed` file.
-
 1. [**flask**](./flask): runs a Python application with Flask and Redis.
 
 1. [**hello**](./hello): implements the classical "Hello, world!" test.
