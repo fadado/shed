@@ -10,6 +10,8 @@ containers. Additionally, there are some new commands.
 _Shed_ is written in _Bash_ and it works reading some configurations files that
 are also _Bash_ scripts, declaring parameters with string, list or dictionary values.
 
+## Scripts
+
 For easy management, the _Shed_ commands are divided in several separated
 scripts. Each script has a reference document:
 
@@ -22,6 +24,117 @@ scripts. Each script has a reference document:
 * [`reference-network.md`](docs/reference-network.md): documentation for [`shed-network`](shed-network) commands.
 
 * [`reference-volume.md`](docs/reference-volume.md): documentation for [`shed-volume`](shed-volume) commands.
+
+### shed-hub
+
+The `shed-hub` script provides access to the most general Docker commands. Two
+commands are not in Docker, and the modified commands send output lo `less`.
+
+| Command | New | Modified |
+|---------|:---:|:--------:|
+| <code>build [OPTIONS]</code> | x | |
+| <code>events [OPTIONS]</code> | | |
+| <code>info</code> | | x |
+| <code>inspect [OPTIONS] CONTAINER&#124;IMAGE [CONTAINER&#124;IMAGE...]</code> | | |
+| <code>login [OPTIONS] [SERVER]</code> | | |
+| <code>logout [SERVER]</code> | | |
+| <code>pull [OPTIONS] NAME[:TAG&#124;@DIGEST]</code> | | |
+| <code>push NAME[:TAG]</code> | | |
+| <code>query [OPTIONS] CONTAINER&#124;IMAGE [QUERY]</code> | x | |
+| <code>search [OPTIONS] TERM</code> | | |
+| <code>version</code> | | x |
+
+### shed-image
+
+The `shed-image` script provides access to the image related Docker commands.
+The new command `purge` remove dangling images, and the modified command `rm`
+is an alias to the Doker `rmi` command.
+
+| Command | New | Modified |
+|---------|:---:|:--------:|
+| <code>build [OPTIONS] PATH &#124; URL &#124; -</code> | | |
+| <code>commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]</code> | | |
+| <code>history [OPTIONS] IMAGE</code> | | |
+| <code>images [OPTIONS] [REPOSITORY]</code> | | |
+| <code>import URL&#124;- [REPOSITORY[:TAG]]</code> | | |
+| <code>load [OPTIONS]</code> | | |
+| <code>purge [OPTIONS]</code> | x | |
+| <code>rm [OPTIONS] IMAGE [IMAGE...]</code> | | x |
+| <code>save [OPTIONS] IMAGE [IMAGE...]</code> | | |
+| <code>tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]</code> | | |
+
+### shed-container
+
+The `shed-container` script provides access to the container related Docker commands.
+Most of the commands accept options to extend the command to sets of containers:
+
+    -a, --all       Apply command to all containers
+    -l, --latest    Apply command to the latest created container
+    -p, --propagate Propagate command to linked containers
+
+For clarity, the `shed-container` commands are presented in two lists.
+
+#### General commands
+
+| Sets | Command | New | Modified |
+|------|---------|:---:|:--------:|
+| | <code>build [FILE]</code> | x | |
+| | <code>cp [OPTIONS] CONTAINER:PATH LOCALPATH &#124; -</code> | | |
+| | <code>cp [OPTIONS] LOCALPATH &#124; - CONTAINER:PATH</code> | | |
+| | <code>create [OPTIONS] IMAGE [COMMAND] [ARG...]</code> | | |
+| <code>-l</code> |	<code>diff CONTAINER</code> | | |
+| <code>-l</code> |	<code>export CONTAINER</code> | | |
+| <code>-l</code> |	<code>links [OPTIONS] CONTAINER</code> | x | |
+| <code>-l</code> |	<code>port CONTAINER [PRIVATE_PORT[/PROTO]]</code> | | |
+| | <code>ps [OPTIONS]</code> | | |
+| | <code>rename OLD_NAME NEW_NAME</code> | | |
+| <code>-alp</code> |	<code>rm [OPTIONS] CONTAINER [CONTAINER...]</code> | | |
+| <code>-alp</code> |	<code>status CONTAINER</code> | x | |
+
+#### Runtime commands
+
+| Sets | Command | New | Modified |
+|------|---------|:---:|:--------:|
+| <code>-l</code> |	<code>attach [OPTIONS] CONTAINER</code> | | |
+| | <code>exec [OPTIONS] CONTAINER COMMAND [ARG...]</code> | | x |
+| <code>-alp</code> |	<code>kill [OPTIONS] CONTAINER [CONTAINER...]</code> | | |
+| <code>-l</code> |	<code>logs [OPTIONS] CONTAINER</code> | | x |
+| <code>-alp</code> |	<code>pause CONTAINER</code> | | |
+| <code>-alp</code> |	<code>restart [OPTIONS] CONTAINER [CONTAINER...]</code> | | |
+| | <code>run [OPTIONS] IMAGE [COMMAND] [ARG...]</code> | | |
+| | <code>ship [OPTIONS]</code> | x | |
+| <code>-alp</code> |	<code>start [OPTIONS] CONTAINER [CONTAINER...]</code> | | |
+| | <code>stats [OPTIONS] CONTAINER</code> | | |
+| <code>-alp</code> |	<code>stop [OPTIONS] CONTAINER [CONTAINER...]</code> | | |
+| <code>-l</code> |	<code>top CONTAINER [list OPTIONS]</code> | | x |
+| <code>-alp</code> |	<code>unpause CONTAINER</code> | | |
+| <code>-alp</code> |	<code>wait CONTAINER [CONTAINER...]</code> | | |
+
+### shed-network
+
+The `shed-network` script provides access to the network related Docker commands.
+
+| Command | New | Modified |
+|---------|:---:|:--------:|
+| <code>create [OPTIONS] NETWORK-NAME</code>| | |
+| <code>connect [OPTIONS] NETWORK CONTAINER</code>| | |
+| <code>disconnect [OPTIONS] NETWORK CONTAINER</code>| | |
+| <code>inspect [OPTIONS] NETWORK [NETWORK...]</code>| | |
+| <code>ls [OPTIONS]</code>| | |
+| <code>rm [OPTIONS] NETWORK [NETWORK...]</code>| | |
+
+### shed-volume
+
+The `shed-volume` script provides access to the volume related Docker commands.
+The new command `purge` remove dangling volumes.
+
+| Command | New | Modified |
+|---------|:---:|:--------:|
+| <code>create [OPTIONS]</code>| | |
+| <code>inspect [OPTIONS] VOLUME [VOLUME...]</code>| | |
+| <code>ls [OPTIONS]</code>| | |
+| <code>purge [OPTIONS]</code>| x | |
+| <code>rm [OPTIONS] VOLUME [VOLUME...]</code>| | |
 
 ## Shedfiles
 
