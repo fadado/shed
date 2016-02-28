@@ -146,8 +146,31 @@ Also, if you want to configure the implicit call to `docker build` made by `shed
 you  can define a file called `Dockerfile.shed` for each image to build.
 
 These files are _Bash_ files, and all the power of _Bash_ is available. The files
-define parameters, with string, list o dictionary values. Important: parameters
-not used must not be set, even to the empty string!
+define parameters, with string, list o dictionary values. 
+
+Strings, lists and dictionaries in _Bash_:
+
+    STRING='Hello'                          # 'declare' or 'local', optional
+    declare -a LIST=( a b c )               # 'declare' or 'local', optional
+    declare -A DICTIONARY=( [k]=v [j]=w )   # 'declare' or local mandatory
+
+Lists usage:
+
+    $ echo ${LIST[0]}
+    a
+    $ echo ${LIST[@]}
+    a b c
+    $ echo ${!LIST[@]}
+    0 1 2
+
+Dictionaries usage:
+
+    $ echo ${DICTIONARY[k]}
+    v
+    $ echo ${DICTIONARY[@]}
+    w v
+    $ echo ${!DICTIONARY[@]}
+    j k
 
 ### Project shedfile
 
