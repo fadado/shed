@@ -152,7 +152,7 @@ Strings, lists and dictionaries in _Bash_:
 
     STRING='Hello'                          # 'declare' or 'local', optional
     declare -a LIST=( a b c )               # 'declare' or 'local', optional
-    declare -A DICTIONARY=( [k]=v [j]=w )   # 'declare' or local mandatory
+    declare -A DICTIONARY=( [k]=v [j]=w )   # 'declare' or 'local' mandatory
 
 Lists usage:
 
